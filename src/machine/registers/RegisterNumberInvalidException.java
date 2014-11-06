@@ -1,4 +1,4 @@
-package machine;
+package machine.registers;
 
 public class RegisterNumberInvalidException extends Exception {
     

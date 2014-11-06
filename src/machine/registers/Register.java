@@ -1,12 +1,12 @@
-package machine;
+package machine.registers;
 
-public class Sigma16Register {
+public class Register {
     
     private byte regNum;
     private short value;
     
-    public Sigma16Register(byte regNum) throws RegisterNumberInvalidException{
-        if (regNum < 0 || regNum > 15 ){
+    public Register(byte regNum) throws RegisterNumberInvalidException{
+        if (regNum < 0 || regNum > RegisterFile.MAX_REG_NUM ){
             throw new RegisterNumberInvalidException();
         }
         else {
