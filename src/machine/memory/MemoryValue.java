@@ -11,7 +11,7 @@ public class MemoryValue {
     private short value = 0;
     
     public MemoryValue(short value){
-        this.value = value;
+        this.value = value;;
     }
     
     public short getValue(){
