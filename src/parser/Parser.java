@@ -8,6 +8,8 @@ import java.io.IOException;
 import machine.instructions.DataStatement;
 import machine.instructions.RRRInstruction;
 import machine.instructions.RXInstruction;
+import machine.registers.Register;
+import machine.registers.RegisterNumberInvalidException;
 
 /**
  * @author Paul Cowie
@@ -113,6 +115,80 @@ public class Parser {
         
         return new DataStatement(label, value);
         
+    }
+    
+    private Register[] splitRRRCode(String RRRCodes) throws NumberFormatException, RegisterNumberInvalidException{
+        String[] rCodes = RRRCodes.split(",");
+        Register[] registers = new Register[3];
+        for (int i = 0; i < rCodes.length; i++){
+            rCodes[i].replaceAll("R", "");
+            registers[i] = new Register(Byte.parseByte(rCodes[i]));
+            
+        }
+        
+        return registers;
+        
+    }
+    
+    private String[] splitRXCode(String RXCodes) throws NumberFormatException, RegisterNumberInvalidException{
+        String[] rCodes = RXCodes.split(",");
+        String[] codeParts = new String[3];
+        for (int i = 0; i < rCodes.length; i++){
+            rCodes[i].replaceAll("[R\\[\\]]", "");
+            codeParts[i] = rCodes[i];
+            
+        }
+        
+        return codeParts;
+        
+    }
+    
+    
+    private RRRInstruction parseRRRInstruction(String[] splitLine) throws RegisterNumberInvalidException{
+        if(splitLine.length == 2){
+            String opName = splitLine[0];
+            Register[] registers = splitRRRCode(splitLine[1]) ;
+            return new RRRInstruction(opName, registers[0], registers[1], registers[2]);
+        }
+        
+        else if(splitLine.length == 3){
+            String label = splitLine[0];
+            String opName = splitLine[1];
+            Register[] registers = splitRRRCode(splitLine[2]) ;
+            return new RRRInstruction(opName, registers[0], registers[1], registers[2], label);
+        }
+        
+        else{
+            return null;
+        }
+    }
+    
+    
+    private RXInstruction parseRXInstruction(String splitLine[]) throws NumberFormatException, RegisterNumberInvalidException{
+        if(splitLine.length == 2){
+            String opName = splitLine[0];
+            String[] codeParts = splitRXCode(splitLine[1]);
+            Register destReg = new Register(Byte.parseByte(codeParts[0]));
+            String[] memoryPart = codeParts[1].split("[");
+            String value = memoryPart[0];
+            Register indexFromLabel = new Register(Byte.parseByte(memoryPart[1].replaceAll("[\\]R", "")));
+            return new RXInstruction(opName, destReg, value, indexFromLabel);
+        }
+        
+        else if(splitLine.length == 3){
+            String label = splitLine[0];
+            String opName = splitLine[1];
+            String[] codeParts = splitRXCode(splitLine[2]);
+            Register destReg = new Register(Byte.parseByte(codeParts[0]));
+            String[] memoryPart = codeParts[1].split("[");
+            String value = memoryPart[0];
+            Register indexFromLabel = new Register(Byte.parseByte(memoryPart[1].replaceAll("[\\]R", "")));
+            return new RXInstruction(opName, destReg, value, indexFromLabel, label);
+        }
+        
+        else{
+            return null;
+        }
     }
     
     
