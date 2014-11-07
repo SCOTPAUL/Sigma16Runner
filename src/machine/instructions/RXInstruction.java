@@ -3,7 +3,6 @@
  */
 package machine.instructions;
 
-import machine.memory.MemoryValue;
 import machine.registers.Register;
 
 /**
@@ -12,14 +11,24 @@ import machine.registers.Register;
  */
 public class RXInstruction extends Sigma16Instruction {
     
-    protected MemoryValue mValue;
+    public static final String[] RXInstructions = { "load", "lea", "store",
+            "jump", "jumpT", "jumpF" };
+    
+    protected short memValue;
     protected Register indexFromLabel;
     
-    public RXInstruction(String opName, Register destReg, MemoryValue value, Register indexFromLabel){
+    public RXInstruction(String opName, Register destReg, short value, Register indexFromLabel, String label){
         this.opName = opName.toLowerCase();
         this.destReg = destReg;
-        this.mValue = value;
+        this.memValue = value;
         this.indexFromLabel = indexFromLabel;
+        super.label = label;
     }
+    
+    public RXInstruction(String opName, Register destReg, short value, Register indexFromLabel){
+        this(opName, destReg, value, indexFromLabel, null);
+    }
+    
+    
 
 }
