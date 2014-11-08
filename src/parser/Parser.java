@@ -42,7 +42,7 @@ public class Parser {
 
     }
 
-    public String parse() {
+    public String parse() throws RegisterNumberInvalidException {
         String returnString = null;
         sb = new StringBuilder();
 
@@ -55,6 +55,12 @@ public class Parser {
             while (line != null) {
                 line = removeComments(line);
                 if (line.length() > 0) {
+                    if(checkStatementType(line.split("\\s+"))==1){
+                        System.out.println(parseRRRInstruction(line.trim().split("\\s+")));
+                    }
+                    if((checkStatementType(line.split("\\s+"))==2)){
+                        System.out.println(parseRXInstruction(line.trim().split("\\s+")));
+                    }
                     sb.append(line).append("\n");
                 }
                 line = br.readLine();
@@ -121,8 +127,7 @@ public class Parser {
         String[] rCodes = RRRCodes.split(",");
         Register[] registers = new Register[3];
         for (int i = 0; i < rCodes.length; i++){
-            rCodes[i].replaceAll("R", "");
-            registers[i] = new Register(Byte.parseByte(rCodes[i]));
+            registers[i] = new Register(Byte.parseByte(rCodes[i].replaceAll("R", "")));
             
         }
         
@@ -134,8 +139,7 @@ public class Parser {
         String[] rCodes = RXCodes.split(",");
         String[] codeParts = new String[3];
         for (int i = 0; i < rCodes.length; i++){
-            rCodes[i].replaceAll("[R\\[\\]]", "");
-            codeParts[i] = rCodes[i];
+            codeParts[i] = rCodes[i].replaceAll("[R\\]]", "");
             
         }
         
@@ -154,7 +158,7 @@ public class Parser {
         else if(splitLine.length == 3){
             String label = splitLine[0];
             String opName = splitLine[1];
-            Register[] registers = splitRRRCode(splitLine[2]) ;
+            Register[] registers = splitRRRCode(splitLine[2]);
             return new RRRInstruction(opName, registers[0], registers[1], registers[2], label);
         }
         
@@ -169,20 +173,21 @@ public class Parser {
             String opName = splitLine[0];
             String[] codeParts = splitRXCode(splitLine[1]);
             Register destReg = new Register(Byte.parseByte(codeParts[0]));
-            String[] memoryPart = codeParts[1].split("[");
+            String[] memoryPart = codeParts[1].split("\\[");
             String value = memoryPart[0];
-            Register indexFromLabel = new Register(Byte.parseByte(memoryPart[1].replaceAll("[\\]R", "")));
+            Register indexFromLabel = new Register(Byte.parseByte(memoryPart[1].replaceAll("[\\]R]", "")));
             return new RXInstruction(opName, destReg, value, indexFromLabel);
         }
         
         else if(splitLine.length == 3){
+            System.out.println(splitLine[0]);
             String label = splitLine[0];
             String opName = splitLine[1];
             String[] codeParts = splitRXCode(splitLine[2]);
             Register destReg = new Register(Byte.parseByte(codeParts[0]));
-            String[] memoryPart = codeParts[1].split("[");
+            String[] memoryPart = codeParts[1].split("\\[");
             String value = memoryPart[0];
-            Register indexFromLabel = new Register(Byte.parseByte(memoryPart[1].replaceAll("[\\]R", "")));
+            Register indexFromLabel = new Register(Byte.parseByte(memoryPart[1]));
             return new RXInstruction(opName, destReg, value, indexFromLabel, label);
         }
         

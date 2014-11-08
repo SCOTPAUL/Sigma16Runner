@@ -29,6 +29,13 @@ public class RXInstruction extends Sigma16Instruction {
         this(opName, destReg, value, indexFromLabel, null);
     }
     
-    
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        if (label != null){
+            sb.append(label).append(" ");
+        }
+        return sb.append(opName).append(" ").append(destReg).append(",").append(memValue).append(",").append(indexFromLabel).toString();
+    }
 
 }
