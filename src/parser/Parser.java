@@ -56,7 +56,7 @@ public class Parser {
                 line = removeComments(line);
                 if (line.length() > 0) {
                     //TODO: Replace all of this with a way to store these in some sort of instruction memory
-                    
+                    // TODO: Add support for lines which contain only a label.
                     if(checkStatementType(line.trim().split("\\s+"))==1){
                         System.out.println(parseRRRInstruction(line.trim().split("\\s+")));
                     }
@@ -161,7 +161,7 @@ public class Parser {
         }
         
         else if(splitLine.length == 3){
-            String label = splitLine[0];
+            String label = splitLine[0].replaceAll(":", "");
             String opName = splitLine[1];
             Register[] registers = splitRRRCode(splitLine[2]);
             return new RRRInstruction(opName, registers[0], registers[1], registers[2], label);
@@ -174,25 +174,18 @@ public class Parser {
     
     
     private RXInstruction parseRXInstruction(String splitLine[]) throws NumberFormatException, RegisterNumberInvalidException{
+        String opName = splitLine[splitLine.length - 2];
+        String[] codeParts = splitRXCode(splitLine[splitLine.length -1]);
+        Register destReg = new Register(Byte.parseByte(codeParts[0]));
+        String[] memoryPart = codeParts[1].split("\\[");
+        String value = memoryPart[0];
+        Register indexFromLabel = new Register(Byte.parseByte(memoryPart[1].replaceAll("[\\]R]", "")));
+        
         if(splitLine.length == 2){
-            String opName = splitLine[0];
-            String[] codeParts = splitRXCode(splitLine[1]);
-            Register destReg = new Register(Byte.parseByte(codeParts[0]));
-            String[] memoryPart = codeParts[1].split("\\[");
-            String value = memoryPart[0];
-            Register indexFromLabel = new Register(Byte.parseByte(memoryPart[1].replaceAll("[\\]R]", "")));
             return new RXInstruction(opName, destReg, value, indexFromLabel);
         }
-        
-        else if(splitLine.length == 3){
-            System.out.println(splitLine[0]);
-            String label = splitLine[0];
-            String opName = splitLine[1];
-            String[] codeParts = splitRXCode(splitLine[2]);
-            Register destReg = new Register(Byte.parseByte(codeParts[0]));
-            String[] memoryPart = codeParts[1].split("\\[");
-            String value = memoryPart[0];
-            Register indexFromLabel = new Register(Byte.parseByte(memoryPart[1]));
+        else if (splitLine.length == 3){
+            String label = splitLine[0].replaceAll(":", "");
             return new RXInstruction(opName, destReg, value, indexFromLabel, label);
         }
         
