@@ -55,11 +55,16 @@ public class Parser {
             while (line != null) {
                 line = removeComments(line);
                 if (line.length() > 0) {
-                    if(checkStatementType(line.split("\\s+"))==1){
+                    //TODO: Replace all of this with a way to store these in some sort of instruction memory
+                    
+                    if(checkStatementType(line.trim().split("\\s+"))==1){
                         System.out.println(parseRRRInstruction(line.trim().split("\\s+")));
                     }
-                    if((checkStatementType(line.split("\\s+"))==2)){
+                    if((checkStatementType(line.trim().split("\\s+"))==2)){
                         System.out.println(parseRXInstruction(line.trim().split("\\s+")));
+                    }
+                    if((checkStatementType(line.trim().split("\\s+"))==0)){
+                        System.out.println(parseDataStatement(line.trim().split("\\s+")));
                     }
                     sb.append(line).append("\n");
                 }

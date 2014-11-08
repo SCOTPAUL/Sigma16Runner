@@ -1,7 +1,7 @@
 package machine.instructions;
 
 /**
- * @author paul
+ * @author Paul Cowie
  *
  */
 public class DataStatement {
@@ -27,6 +27,11 @@ public class DataStatement {
 
     public void setValue(short value) {
         this.value = value;
+    }
+    
+    @Override
+    public String toString(){
+        return new StringBuilder(label).append(": ").append(value).toString();
     }
 
 }
