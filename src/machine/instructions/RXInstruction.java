@@ -12,7 +12,7 @@ import machine.registers.Register;
 public class RXInstruction extends Sigma16Instruction {
     
     public static final String[] RXInstructions = { "load", "lea", "store",
-            "jump", "jumpT", "jumpF" };
+            "jumpT", "jumpF" };
     
     protected String memValue;
     protected Register indexFromLabel;

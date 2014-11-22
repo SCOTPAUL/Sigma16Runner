@@ -59,8 +59,8 @@ public class Parser {
                 if (line.length() > 0) {
                     //TODO: Replace all of this with a way to store these in some sort of instruction memory
                     // TODO: Add support for lines which contain only a label.
-                    if(checkStatementType(line.trim().split("\\s+"))==-1){
-                        System.out.println(parseJumpInstruction(line.trim().split("\\s+")));
+                    if((checkStatementType(line.trim().split("\\s+"))==0)){
+                        System.out.println(parseDataStatement(line.trim().split("\\s+")));
                     }
                     if(checkStatementType(line.trim().split("\\s+"))==1){
                         System.out.println(parseRRRInstruction(line.trim().split("\\s+")));
@@ -68,8 +68,8 @@ public class Parser {
                     if((checkStatementType(line.trim().split("\\s+"))==2)){
                         System.out.println(parseRXInstruction(line.trim().split("\\s+")));
                     }
-                    if((checkStatementType(line.trim().split("\\s+"))==0)){
-                        System.out.println(parseDataStatement(line.trim().split("\\s+")));
+                    if(checkStatementType(line.trim().split("\\s+"))==3){
+                        System.out.println(parseJumpInstruction(line.trim().split("\\s+")));
                     }
                     sb.append(line).append("\n");
                 }
@@ -95,12 +95,9 @@ public class Parser {
     /**
      * 
      * @param line
-     * @return -1 if parameterless jump statement, 0 if data statement, 1 if RRR instruction, 2 if RX, instruction, else -1.
+     * @return 0 if data statement, 1 if RRR instruction, 2 if RX instruction, 3 if parameterless jump instruction, else -1.
      */
     private int checkStatementType(String[] splitLine){
-        if((splitLine[0].equals("jump") && splitLine.length == 2) || (splitLine[1].equals("jump") && splitLine.length == 3)){
-            return -1;
-        }
         
         if(splitLine[1].equals("data")){
             return 0;
@@ -124,6 +121,12 @@ public class Parser {
             }
         }
         
+        if((splitLine[0].equals("jump") && splitLine.length == 2) || (splitLine[1].equals("jump") && splitLine.length == 3)){
+            return 3;
+        }
+        
+        
+        
         return -1;       
         
     }
@@ -140,18 +143,18 @@ public class Parser {
     private JumpInstruction parseJumpInstruction(String[] splitLine) throws NumberFormatException, RegisterNumberInvalidException{
         if (splitLine.length == 2){
             String opName = splitLine[0];
-            String[] labelParts = splitLine[1].split(",");
+            String[] labelParts = splitLine[1].split("\\[");
             String value = labelParts[0];
-            Register indexFromLabel = new Register(Byte.parseByte(labelParts[1].replaceAll("[\\]R\\[]", "")));
+            Register indexFromLabel = new Register(Byte.parseByte(labelParts[1].replaceAll("[\\]R]", "")));
             return new JumpInstruction(opName, value, indexFromLabel);
             
         }
         else if (splitLine.length == 3){
             String label = splitLine[0];
             String opName = splitLine[1];
-            String[] labelParts = splitLine[2].split(",");
+            String[] labelParts = splitLine[2].split("\\[");
             String value = labelParts[0];
-            Register indexFromLabel = new Register(Byte.parseByte(labelParts[1].replaceAll("[\\]R\\[]", "")));
+            Register indexFromLabel = new Register(Byte.parseByte(labelParts[1].replaceAll("[\\]R]", "")));
             return new JumpInstruction(opName, value, indexFromLabel, label);
         }
         else{
