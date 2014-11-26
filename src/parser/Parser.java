@@ -30,7 +30,16 @@ public class Parser {
         this(new File(textFile));
 
     }
-
+    
+    /**
+     * Returns {@code line} up to the point where the comment character ;
+     * character is found, preventing comments from being parsed as
+     * instructions.
+     * 
+     * @param line
+     *            instruction line to have its comments removed
+     * @return {@code line} with comments removed
+     */
     private String removeComments(String line) {
         String returnString = null;
         int commentIndex = line.indexOf(';');
@@ -91,11 +100,15 @@ public class Parser {
         return returnString;
 
     }
-    
+
     /**
+     * Finds the type of a Sigma16 instruction based on the instruction's
+     * opcode.
      * 
      * @param line
-     * @return 0 if data statement, 1 if RRR instruction, 2 if RX instruction, 3 if parameterless jump instruction, else -1.
+     *            an instruction line to be have its type checked
+     * @return 0 if data statement, 1 if RRR instruction, 2 if RX instruction, 3
+     *         if parameterless jump instruction, else -1.
      */
     private int checkStatementType(String[] splitLine){
         
@@ -125,13 +138,19 @@ public class Parser {
             return 3;
         }
         
-        
-        
+        // Line doesn't match any known pattern for a Sigma16 instruction
         return -1;       
         
     }
     
-    
+    /**
+     * Creates a new DataStatement object from a data statement line in the file
+     * 
+     * @param splitLine
+     *            the instruction line split on each whitespace character
+     *            sequence
+     * @return new DataStatement representing the instruction
+     */
     private DataStatement parseDataStatement(String[] splitLine){
         String label = splitLine[0];
         short value = Short.parseShort(splitLine[2]);
@@ -140,7 +159,16 @@ public class Parser {
         
     }
     
-    private JumpInstruction parseJumpInstruction(String[] splitLine) throws NumberFormatException, RegisterNumberInvalidException{
+    /**
+     * Creates a new JumpInstruction object from a jump statement line in the
+     * file
+     * 
+     * @param splitLine
+     *            the instruction line split on each whitespace character
+     *            sequence
+     * @return new JumpInstruction representing the instruction
+     */
+    private JumpInstruction parseJumpInstruction(String[] splitLine) {
         if (splitLine.length == 2){
             String opName = splitLine[0];
             String[] labelParts = splitLine[1].split("\\[");
@@ -162,32 +190,74 @@ public class Parser {
         }
     }
     
-    private Register[] splitRRRCode(String RRRCodes) throws NumberFormatException, RegisterNumberInvalidException{
+    /**
+     * Splits the register part of a RRRInstruction up and returns an array of
+     * Registers representing the registers in the line.
+     * <p>
+     * For example, if RRRCodes is {@code R3,R4,R6}, a Register array
+     * representing [R3, R4, R6] will be returned.
+     * </p>
+     * 
+     * @param RRRCodes
+     *            String in form "RA,RB,RC" where A,B,C are integers between 0
+     *            and 15.
+     * @return array of Register objects representing the registers in the line.
+     */
+    private Register[] splitRRRCode(String RRRCodes) {
         String[] rCodes = RRRCodes.split(",");
         Register[] registers = new Register[3];
+        
         for (int i = 0; i < rCodes.length; i++){
             registers[i] = new Register(Byte.parseByte(rCodes[i].replaceAll("R", "")));
             
         }
         
         return registers;
-        
     }
     
-    private String[] splitRXCode(String RXCodes) throws NumberFormatException, RegisterNumberInvalidException{
+    /**
+     * Splits the register,label,register part of an RXInstruction up and
+     * returns an array of Strings representing the registers and labels used in
+     * the line. This makes parsing the String easier later.
+     * <p>
+     * For example, {@code splitRXCode("R3,x[R0]") will return ["3", "x", "0"]}.
+     * The first part of this is the destination register's number, the second
+     * part is a memory label or constant number, the third part is the register
+     * number of the register holding the displacement from the label.
+     * </p>
+     * 
+     * @param RXCodes
+     *            String in form RA,b[RC], where A and C are between 0 and 15
+     *            and b is a memory label or constant integer.
+     * @return String array in form ["destination register num", "label",
+     *         "displacement register num"]
+     */
+    private String[] splitRXCode(String RXCodes) {
         String[] rCodes = RXCodes.split(",");
         String[] codeParts = new String[3];
-        for (int i = 0; i < rCodes.length; i++){
-            codeParts[i] = rCodes[i].replaceAll("[R\\]]", "");
-            
-        }
+        
+        codeParts[0] = rCodes[0].replace("R", "");
+        
+        String[] splitLabelAndDisplacement = rCodes[1].split("\\[");
+        
+        codeParts[1] = splitLabelAndDisplacement[0];
+        codeParts[2] = splitLabelAndDisplacement[1].replaceAll("[R\\]]", "");
         
         return codeParts;
         
     }
     
-    
-    private RRRInstruction parseRRRInstruction(String[] splitLine) throws RegisterNumberInvalidException{
+    /**
+     * Returns a new RRRInstruction, representing a RRR instruction line in the
+     * file.
+     * 
+     * @param splitLine
+     *            String array with RRR instruction in the form ["label",
+     *            "operation", "RA,RB,RC"]
+     * @return a new RRRInstruction object which represents the line, null if
+     *         line is not in valid format.
+     */
+    private RRRInstruction parseRRRInstruction(String[] splitLine) {
         if(splitLine.length == 2){
             String opName = splitLine[0];
             Register[] registers = splitRRRCode(splitLine[1]) ;
@@ -206,16 +276,22 @@ public class Parser {
         }
     }
     
-    
-    private RXInstruction parseRXInstruction(String splitLine[]) throws NumberFormatException, RegisterNumberInvalidException{
-        //TODO: Add support for jump instruction.
-        
+    /**
+     * Returns a new RXInstruction, representing an RX instruction line in the
+     * file.
+     * 
+     * @param splitLine
+     *            String array with RX instruction in the form ["label",
+     *            "operation", "RA,b[RC]"]
+     * @return a new RXInstruction object which represents the line, null if
+     *         line is not in valid format.
+     */
+    private RXInstruction parseRXInstruction(String[] splitLine) {        
         String opName = splitLine[splitLine.length - 2];
         String[] codeParts = splitRXCode(splitLine[splitLine.length -1]);
         Register destReg = new Register(Byte.parseByte(codeParts[0]));
-        String[] memoryPart = codeParts[1].split("\\[");
-        String value = memoryPart[0];
-        Register indexFromLabel = new Register(Byte.parseByte(memoryPart[1].replaceAll("[\\]R]", "")));
+        String value = codeParts[1];
+        Register indexFromLabel = new Register(Byte.parseByte(codeParts[2]));
         
         if(splitLine.length == 2){
             return new RXInstruction(opName, destReg, value, indexFromLabel);
