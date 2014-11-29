@@ -27,5 +27,11 @@ public class Register {
     public short getValue(){
         return this.value;
     }
+    
+    
+    @Override
+    public String toString(){
+        return new StringBuilder("R").append(regNum).append("(").append(value).append(")").toString();
+    }
 
 }

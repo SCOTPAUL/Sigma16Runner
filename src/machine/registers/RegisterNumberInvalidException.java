@@ -1,6 +1,6 @@
 package machine.registers;
 
-public class RegisterNumberInvalidException extends Exception {
+public class RegisterNumberInvalidException extends RuntimeException {
     
     /**
      * 

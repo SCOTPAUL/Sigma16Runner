@@ -1,22 +1,29 @@
-/**
- * 
- */
 package machine.memory;
 
+import java.util.ArrayList;
+
 /**
- * @author paul
+ * @author Paul Cowie
  *
  */
-public class Memory {
-    public static final short memSize = Short.MAX_VALUE;
-    public short[] memory = new short[memSize];
+public class Memory<E> {
     
-    public void addToMem(short address, short value){
-        memory[address] = value;
+    private ArrayList<E> memory;
+
+    /**
+     * 
+     */
+    public Memory() {
+        this.memory = new ArrayList<>(Short.MAX_VALUE);
     }
-    
-    public short getFromMem(short address){
-        return memory[address];
+
+    public void addToMem(int address, E value) {
+        memory.add(value);
+        
+    }
+
+    public E getFromMem(int address) {
+        return memory.get(address);
     }
 
 }

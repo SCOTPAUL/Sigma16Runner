@@ -10,6 +10,7 @@ public abstract class Sigma16Instruction {
     
     protected String opName;
     protected Register destReg;
+    protected String label;
     
     public String getOpName(){
         return this.opName;
