@@ -9,7 +9,7 @@ import machine.registers.Register;
  * @author Paul Cowie
  * 
  */
-public class JumpInstruction {
+public class JumpInstruction extends Sigma16Instruction{
     
     public static final String JumpInstruction = "jump";
     

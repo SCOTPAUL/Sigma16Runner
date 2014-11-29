@@ -1,6 +1,7 @@
 package parser;
 
 import java.io.BufferedReader;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -9,8 +10,9 @@ import machine.instructions.DataStatement;
 import machine.instructions.JumpInstruction;
 import machine.instructions.RRRInstruction;
 import machine.instructions.RXInstruction;
+import machine.instructions.Sigma16Instruction;
+import machine.memory.Memory;
 import machine.registers.Register;
-import machine.registers.RegisterNumberInvalidException;
 
 /**
  * 
@@ -19,8 +21,13 @@ import machine.registers.RegisterNumberInvalidException;
  */
 public class Parser {
     private StringBuilder sb;
-    private BufferedReader br;
     private File sigma16File;
+
+    private Memory<Sigma16Instruction> programMemory = new Memory<>();
+    private Memory<DataStatement> dataMemory = new Memory<>();
+
+    private short currentDataMemAddress = 0;
+    private short currentProgMemAddress = 0;
 
     public Parser(File textFile) {
         this.sigma16File = textFile;
@@ -30,7 +37,7 @@ public class Parser {
         this(new File(textFile));
 
     }
-    
+
     /**
      * Returns {@code line} up to the point where the comment character ;
      * character is found, preventing comments from being parsed as
@@ -53,12 +60,20 @@ public class Parser {
 
     }
 
-    public String parse() throws RegisterNumberInvalidException {
-        String returnString = null;
+    /**
+     * Removes spaces from start and end of line and splits it on whitespace
+     * 
+     * @param line
+     * @return Split line with extra whitespace removed.
+     */
+    private String[] splitLine(String line) {
+        return line.trim().split("\\s+");
+    }
+
+    public String parse() {
         sb = new StringBuilder();
 
-        try {
-            br = new BufferedReader(new FileReader(sigma16File));
+        try (BufferedReader br = new BufferedReader(new FileReader(sigma16File))) {
 
             String line = null;
 
@@ -66,39 +81,57 @@ public class Parser {
             while (line != null) {
                 line = removeComments(line);
                 if (line.length() > 0) {
-                    //TODO: Replace all of this with a way to store these in some sort of instruction memory
+                    // TODO: Replace all of this with a way to store these in
+                    // some sort of instruction memory
                     // TODO: Add support for lines which contain only a label.
-                    if((checkStatementType(line.trim().split("\\s+"))==0)){
-                        System.out.println(parseDataStatement(line.trim().split("\\s+")));
+                    String[] splitLine = splitLine(line);
+                    int lineType = checkStatementType(splitLine);
+
+                    // Decide what to do with the line
+                    switch (lineType) {
+                    case 0:
+                        dataMemory.addToMem(this.currentDataMemAddress++,
+                                parseDataStatement(splitLine));
+                        sb.append(parseDataStatement(splitLine));
+                        break;
+                    case 1:
+                        programMemory.addToMem(this.currentProgMemAddress++,
+                                parseRRRInstruction(splitLine));
+                        sb.append(parseRRRInstruction(splitLine));
+                        break;
+                    case 2:
+                        programMemory.addToMem(this.currentProgMemAddress++,
+                                parseRXInstruction(splitLine));
+                        sb.append(parseRXInstruction(splitLine));
+                        break;
+                    case 3:
+                        programMemory.addToMem(this.currentProgMemAddress++,
+                                parseJumpInstruction(splitLine));
+                        sb.append(parseJumpInstruction(splitLine));
+                        break;
+                    default:
+                        break;
                     }
-                    if(checkStatementType(line.trim().split("\\s+"))==1){
-                        System.out.println(parseRRRInstruction(line.trim().split("\\s+")));
-                    }
-                    if((checkStatementType(line.trim().split("\\s+"))==2)){
-                        System.out.println(parseRXInstruction(line.trim().split("\\s+")));
-                    }
-                    if(checkStatementType(line.trim().split("\\s+"))==3){
-                        System.out.println(parseJumpInstruction(line.trim().split("\\s+")));
-                    }
-                    sb.append(line).append("\n");
+
+                    sb.append("\n");
                 }
+
                 line = br.readLine();
+
             }
-
-            returnString = sb.toString();
-
-
-        } catch (IOException e) {
-            returnString = null;
-        }
-        
-        try {
-            br.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return returnString;
+        return sb.toString();
 
+    }
+
+    public Memory<Sigma16Instruction> getProgMem() {
+        return this.programMemory;
+    }
+
+    public Memory<DataStatement> getDataMem() {
+        return this.dataMemory;
     }
 
     /**
@@ -110,39 +143,38 @@ public class Parser {
      * @return 0 if data statement, 1 if RRR instruction, 2 if RX instruction, 3
      *         if parameterless jump instruction, else -1.
      */
-    private int checkStatementType(String[] splitLine){
-        
-        if(splitLine[1].equals("data")){
+    private int checkStatementType(String[] splitLine) {
+
+        if (splitLine[1].equals("data")) {
             return 0;
         }
-        
-        for (String RRROpName: RRRInstruction.RRRInstructions){
-            if(splitLine[0].equals(RRROpName) && splitLine.length == 2){
+
+        for (String RRROpName : RRRInstruction.RRRInstructions) {
+            if (splitLine[0].equals(RRROpName) && splitLine.length == 2) {
                 return 1;
-            }
-            else if(splitLine[1].equals(RRROpName) && splitLine.length == 3){
+            } else if (splitLine[1].equals(RRROpName) && splitLine.length == 3) {
                 return 1;
             }
         }
-        
-        for (String RXOpName: RXInstruction.RXInstructions){
-            if(splitLine[0].equals(RXOpName) && splitLine.length == 2){
+
+        for (String RXOpName : RXInstruction.RXInstructions) {
+            if (splitLine[0].equals(RXOpName) && splitLine.length == 2) {
                 return 2;
-            }
-            else if(splitLine[1].equals(RXOpName) && splitLine.length == 3){
+            } else if (splitLine[1].equals(RXOpName) && splitLine.length == 3) {
                 return 2;
             }
         }
-        
-        if((splitLine[0].equals("jump") && splitLine.length == 2) || (splitLine[1].equals("jump") && splitLine.length == 3)){
+
+        if ((splitLine[0].equals("jump") && splitLine.length == 2)
+                || (splitLine[1].equals("jump") && splitLine.length == 3)) {
             return 3;
         }
-        
+
         // Line doesn't match any known pattern for a Sigma16 instruction
-        return -1;       
-        
+        return -1;
+
     }
-    
+
     /**
      * Creates a new DataStatement object from a data statement line in the file
      * 
@@ -151,14 +183,14 @@ public class Parser {
      *            sequence
      * @return new DataStatement representing the instruction
      */
-    private DataStatement parseDataStatement(String[] splitLine){
+    private DataStatement parseDataStatement(String[] splitLine) {
         String label = splitLine[0];
         short value = Short.parseShort(splitLine[2]);
-        
+
         return new DataStatement(label, value);
-        
+
     }
-    
+
     /**
      * Creates a new JumpInstruction object from a jump statement line in the
      * file
@@ -169,27 +201,27 @@ public class Parser {
      * @return new JumpInstruction representing the instruction
      */
     private JumpInstruction parseJumpInstruction(String[] splitLine) {
-        if (splitLine.length == 2){
+        if (splitLine.length == 2) {
             String opName = splitLine[0];
             String[] labelParts = splitLine[1].split("\\[");
             String value = labelParts[0];
-            Register indexFromLabel = new Register(Byte.parseByte(labelParts[1].replaceAll("[\\]R]", "")));
+            Register indexFromLabel = new Register(Byte.parseByte(labelParts[1]
+                    .replaceAll("[\\]R]", "")));
             return new JumpInstruction(opName, value, indexFromLabel);
-            
-        }
-        else if (splitLine.length == 3){
+
+        } else if (splitLine.length == 3) {
             String label = splitLine[0];
             String opName = splitLine[1];
             String[] labelParts = splitLine[2].split("\\[");
             String value = labelParts[0];
-            Register indexFromLabel = new Register(Byte.parseByte(labelParts[1].replaceAll("[\\]R]", "")));
+            Register indexFromLabel = new Register(Byte.parseByte(labelParts[1]
+                    .replaceAll("[\\]R]", "")));
             return new JumpInstruction(opName, value, indexFromLabel, label);
-        }
-        else{
+        } else {
             return null;
         }
     }
-    
+
     /**
      * Splits the register part of a RRRInstruction up and returns an array of
      * Registers representing the registers in the line.
@@ -206,15 +238,16 @@ public class Parser {
     private Register[] splitRRRCode(String RRRCodes) {
         String[] rCodes = RRRCodes.split(",");
         Register[] registers = new Register[3];
-        
-        for (int i = 0; i < rCodes.length; i++){
-            registers[i] = new Register(Byte.parseByte(rCodes[i].replaceAll("R", "")));
-            
+
+        for (int i = 0; i < rCodes.length; i++) {
+            registers[i] = new Register(Byte.parseByte(rCodes[i].replaceAll(
+                    "R", "")));
+
         }
-        
+
         return registers;
     }
-    
+
     /**
      * Splits the register,label,register part of an RXInstruction up and
      * returns an array of Strings representing the registers and labels used in
@@ -235,18 +268,18 @@ public class Parser {
     private String[] splitRXCode(String RXCodes) {
         String[] rCodes = RXCodes.split(",");
         String[] codeParts = new String[3];
-        
+
         codeParts[0] = rCodes[0].replace("R", "");
-        
+
         String[] splitLabelAndDisplacement = rCodes[1].split("\\[");
-        
+
         codeParts[1] = splitLabelAndDisplacement[0];
         codeParts[2] = splitLabelAndDisplacement[1].replaceAll("[R\\]]", "");
-        
+
         return codeParts;
-        
+
     }
-    
+
     /**
      * Returns a new RRRInstruction, representing a RRR instruction line in the
      * file.
@@ -258,24 +291,26 @@ public class Parser {
      *         line is not in valid format.
      */
     private RRRInstruction parseRRRInstruction(String[] splitLine) {
-        if(splitLine.length == 2){
+        if (splitLine.length == 2) {
             String opName = splitLine[0];
-            Register[] registers = splitRRRCode(splitLine[1]) ;
-            return new RRRInstruction(opName, registers[0], registers[1], registers[2]);
+            Register[] registers = splitRRRCode(splitLine[1]);
+            return new RRRInstruction(opName, registers[0], registers[1],
+                    registers[2]);
         }
-        
-        else if(splitLine.length == 3){
+
+        else if (splitLine.length == 3) {
             String label = splitLine[0].replaceAll(":", "");
             String opName = splitLine[1];
             Register[] registers = splitRRRCode(splitLine[2]);
-            return new RRRInstruction(opName, registers[0], registers[1], registers[2], label);
+            return new RRRInstruction(opName, registers[0], registers[1],
+                    registers[2], label);
         }
-        
-        else{
+
+        else {
             return null;
         }
     }
-    
+
     /**
      * Returns a new RXInstruction, representing an RX instruction line in the
      * file.
@@ -286,25 +321,24 @@ public class Parser {
      * @return a new RXInstruction object which represents the line, null if
      *         line is not in valid format.
      */
-    private RXInstruction parseRXInstruction(String[] splitLine) {        
+    private RXInstruction parseRXInstruction(String[] splitLine) {
         String opName = splitLine[splitLine.length - 2];
-        String[] codeParts = splitRXCode(splitLine[splitLine.length -1]);
+        String[] codeParts = splitRXCode(splitLine[splitLine.length - 1]);
         Register destReg = new Register(Byte.parseByte(codeParts[0]));
         String value = codeParts[1];
         Register indexFromLabel = new Register(Byte.parseByte(codeParts[2]));
-        
-        if(splitLine.length == 2){
+
+        if (splitLine.length == 2) {
             return new RXInstruction(opName, destReg, value, indexFromLabel);
-        }
-        else if (splitLine.length == 3){
+        } else if (splitLine.length == 3) {
             String label = splitLine[0].replaceAll(":", "");
-            return new RXInstruction(opName, destReg, value, indexFromLabel, label);
+            return new RXInstruction(opName, destReg, value, indexFromLabel,
+                    label);
         }
-        
-        else{
+
+        else {
             return null;
         }
     }
-    
-    
+
 }
