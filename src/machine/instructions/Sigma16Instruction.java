@@ -1,5 +1,6 @@
 package machine.instructions;
 
+import machine.Machine;
 import machine.registers.Register;
 
 /**
@@ -27,6 +28,8 @@ public abstract class Sigma16Instruction {
     public void setDestReg(Register destReg){
         this.destReg = destReg;
     }
+    
+    public abstract void execute(Machine m);
     
     
 

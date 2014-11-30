@@ -3,6 +3,7 @@
  */
 package machine.instructions;
 
+import machine.Machine;
 import machine.registers.Register;
 
 /**
@@ -36,6 +37,12 @@ public class RXInstruction extends Sigma16Instruction {
             sb.append("[").append(label).append("]");
         }
         return sb.append(opName).append(" ").append(destReg).append(",").append(memValue).append(",").append(indexFromLabel).toString();
+    }
+
+    @Override
+    public void execute(Machine m) {
+        // TODO Auto-generated method stub
+        
     }
 
 }
