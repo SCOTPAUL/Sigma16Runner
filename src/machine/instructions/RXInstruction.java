@@ -7,7 +7,7 @@ import machine.Machine;
 import machine.registers.Register;
 
 /**
- * @author paul
+ * @author Paul Cowie
  *
  */
 public class RXInstruction extends Sigma16Instruction {
