@@ -339,5 +339,10 @@ public class Parser {
             return null;
         }
     }
+    
+    @Override
+    public String toString(){
+        return new StringBuilder(this.dataMemory.toString()).append(this.programMemory.toString()).toString();
+    }
 
 }

@@ -1,6 +1,7 @@
 package machine;
 
 import java.io.File;
+import java.util.Arrays;
 
 import machine.instructions.DataStatement;
 import machine.instructions.Sigma16Instruction;
@@ -28,6 +29,7 @@ public class Machine {
         }
         
         this.sigma16InstructionParser = new Parser(fileName);
+        this.sigma16InstructionParser.parse();
         this.programMemory = sigma16InstructionParser.getProgMem();
         this.dataMemory = sigma16InstructionParser.getDataMem();
         this.programCounter = 0;
@@ -42,9 +44,11 @@ public class Machine {
     
     public void executeFile(){
         while(!terminate){
-            programMemory.getFromMem(programCounter).execute(this);
+            Sigma16Instruction instruction = programMemory.getFromMem(programCounter);
+            if (instruction != null){
+                instruction.execute(this);
+            }
         }
-        toString();
     }
 
     public Memory<Sigma16Instruction> getProgramMemory() {
@@ -62,6 +66,18 @@ public class Machine {
     public void setDataMemory(Memory<DataStatement> dataMemory) {
         this.dataMemory = dataMemory;
     }
+    
+    public int getValueFromMemory(String label){
+        for(DataStatement ds: dataMemory.getMemory()){
+            if (ds == null){
+                break;
+            }
+            if(ds.getLabel().equals(label)){
+                return (int) ds.getValue();
+            }
+        }
+        return Integer.MIN_VALUE;
+    }
 
     public int getProgramCounter() {
         return programCounter;
@@ -71,13 +87,21 @@ public class Machine {
         this.programCounter = programCounter;
     }
     
+    public Register getRegister(byte regNo){
+        return registers[regNo];
+    }
+    
+    public void setRegister(byte regNo, short value) {
+        this.registers[regNo].setValue(value);
+    }
+    
     public void terminate() {
         this.terminate = true;
     }
     
     @Override
     public String toString(){
-        return new StringBuilder("PC: ").append(programCounter).append(" Registers: ").append(registers).append(" Terminated: ").append(terminate).toString();
+        return new StringBuilder("PC: ").append(programCounter).append(" Registers: ").append(Arrays.toString(registers)).append(" Terminated: ").append(terminate).toString();
     }
 
 }

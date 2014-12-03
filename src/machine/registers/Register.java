@@ -16,7 +16,7 @@ public class Register {
     }
     
     public void setValue(short value) throws CannotAlterR0Exception{
-        if(this.regNum == 0){
+        if(this.regNum == 0 && value != 0){
             throw new CannotAlterR0Exception();
         }
         else{
@@ -26,6 +26,10 @@ public class Register {
     
     public short getValue(){
         return this.value;
+    }
+    
+    public byte getRegNum(){
+        return this.regNum;
     }
     
     

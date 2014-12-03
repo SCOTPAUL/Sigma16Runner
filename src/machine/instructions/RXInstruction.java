@@ -34,14 +34,31 @@ public class RXInstruction extends Sigma16Instruction {
     public String toString(){
         StringBuilder sb = new StringBuilder();
         if (label != null){
-            sb.append("[").append(label).append("]");
+            sb.append("[").append(super.label).append("]");
         }
         return sb.append(opName).append(" ").append(destReg).append(",").append(memValue).append(",").append(indexFromLabel).toString();
     }
 
     @Override
     public void execute(Machine m) {
-        // TODO Auto-generated method stub
+        
+        switch(opName){
+            case("load"):
+                int valFromMem = m.getValueFromMemory(this.memValue);
+                if (valFromMem <= Short.MAX_VALUE && valFromMem >= Short.MIN_VALUE){
+                    destReg.setValue((short) valFromMem);
+                    m.setProgramCounter(m.getProgramCounter() + 1);
+                }
+                else{
+                    // TODO: Make new exception for invalid memory label
+                    throw new RuntimeException();
+                }
+                break;
+            default:
+                break;
+        }
+        
+        m.setRegister(destReg.getRegNum(), destReg.getValue());
         
     }
 

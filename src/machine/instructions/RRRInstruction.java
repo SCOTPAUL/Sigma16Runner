@@ -9,7 +9,7 @@ import machine.registers.Register;
  */
 public class RRRInstruction extends Sigma16Instruction {
     
-    public static final String[] RRRInstructions = {"add", "sub", "mul", "div", "cmplt", "cmpgt", "cmpeq"};
+    public static final String[] RRRInstructions = {"add", "sub", "mul", "div", "cmplt", "cmpgt", "cmpeq", "trap"};
     
     protected Register firstReg;
     protected Register secondReg;
@@ -38,7 +38,31 @@ public class RRRInstruction extends Sigma16Instruction {
 
     @Override
     public void execute(Machine m) {
-        // TODO Auto-generated method stub
+        firstReg.setValue(m.getRegister(firstReg.getRegNum()).getValue());
+        secondReg.setValue(m.getRegister(secondReg.getRegNum()).getValue());
+        
+        switch(opName){
+            case("add"):
+                short addValue = (short) (firstReg.getValue() + secondReg.getValue());
+                destReg.setValue(addValue);
+                break;
+            case("sub"):
+                short subValue = (short) (firstReg.getValue() - secondReg.getValue());
+                destReg.setValue(subValue);
+                break;
+            case("trap"):
+                if (destReg.getRegNum() == 0 && firstReg.getRegNum() == 0 && secondReg.getRegNum() == 0){
+                    m.terminate();
+                }
+                break;
+            default:
+                System.out.println(opName);
+                break;
+                
+        }
+        
+        m.setRegister(destReg.getRegNum(), destReg.getValue());
+        m.setProgramCounter(m.getProgramCounter() + 1);        
         
     }
 
