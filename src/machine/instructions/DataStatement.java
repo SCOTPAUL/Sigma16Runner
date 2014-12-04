@@ -31,7 +31,13 @@ public class DataStatement {
     
     @Override
     public String toString(){
-        return new StringBuilder(label).append(": ").append(value).toString();
+        if (label != null) {
+            return new StringBuilder(label).append(": ").append(value)
+                    .toString();
+        }
+        else{
+            return null;
+        }
     }
 
 }

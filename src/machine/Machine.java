@@ -101,7 +101,7 @@ public class Machine {
     
     @Override
     public String toString(){
-        return new StringBuilder("PC: ").append(programCounter).append(" Registers: ").append(Arrays.toString(registers)).append(" Terminated: ").append(terminate).toString();
+        return new StringBuilder("PC: ").append(programCounter).append(" Registers: ").append(Arrays.toString(registers)).append(" Terminated: ").append(terminate).append(dataMemory.toString()).toString();
     }
 
 }

@@ -50,6 +50,40 @@ public class RRRInstruction extends Sigma16Instruction {
                 short subValue = (short) (firstReg.getValue() - secondReg.getValue());
                 destReg.setValue(subValue);
                 break;
+            case("mul"):
+                short mulValue = (short) ((firstReg.getValue() * secondReg.getValue()));
+                destReg.setValue(mulValue);
+                break;
+            case("div"):
+                short divValue = (short) ((firstReg.getValue() / secondReg.getValue()));
+                short remainder = (short) ((firstReg.getValue() % secondReg.getValue()));
+                destReg.setValue(divValue);
+                m.setRegister((byte) 15, remainder);
+                break;
+            case("cmplt"):
+                if(firstReg.getValue() < secondReg.getValue()){
+                    destReg.setValue((short) 1);
+                }
+                else{
+                    destReg.setValue((short) 0);
+                }
+                break;
+            case("cmpeq"):
+                if(firstReg.getValue() == secondReg.getValue()){
+                    destReg.setValue((short) 1);
+                }
+                else{
+                    destReg.setValue((short) 0);
+                }
+                break;
+            case("cmpgt"):
+                if(firstReg.getValue() > secondReg.getValue()){
+                    destReg.setValue((short) 1);
+                }
+                else{
+                    destReg.setValue((short) 0);
+                }
+                break;
             case("trap"):
                 if (destReg.getRegNum() == 0 && firstReg.getRegNum() == 0 && secondReg.getRegNum() == 0){
                     m.terminate();

@@ -1,0 +1,10 @@
+load    R5,x[R0]
+load    R6,y[R0]
+
+
+cmpgt   R7,R5,R6
+
+trap    R0,R0,R0
+
+x    data    10
+y    data    8

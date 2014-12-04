@@ -1,7 +1,6 @@
 package main;
 
 import java.io.File;
-
 import machine.Machine;
 
 public class Sigma16RunnerMain {
@@ -11,7 +10,7 @@ public class Sigma16RunnerMain {
      */
     public static void main(String[] args) {
                 
-        File textFile = new File("/home/paul/Documents/uniWork/year2/cs/cs2/t/test.asm.txt");
+        File textFile = new File(args[0]);
         
         Machine runner = new Machine(textFile);
         runner.executeFile();
