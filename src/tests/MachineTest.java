@@ -19,14 +19,15 @@ public class MachineTest {
     }
     
     /**
-     * Test that test.asm.txt file terminates after 3 instructions
+     * Test that test.asm.txt file terminates after 4 instructions
      */
     @Test
     public void testEndExecution() {
         m =  new Machine(currentDir + "/src/tests/test.asm.txt");
         m.executeFile();
         System.out.println(m);
-        assertTrue(m.getProgramCounter() == 4);        
+        assertTrue(m.getProgramCounter() == 4);
+        assertTrue(m.getDataMemory().getFromMem(1).getValue() == 20);
     }
     
     @Test

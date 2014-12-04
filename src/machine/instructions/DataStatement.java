@@ -36,7 +36,7 @@ public class DataStatement {
                     .toString();
         }
         else{
-            return null;
+            return String.valueOf(value);
         }
     }
 

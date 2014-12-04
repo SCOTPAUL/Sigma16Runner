@@ -78,6 +78,20 @@ public class Machine {
         }
         return Integer.MIN_VALUE;
     }
+    
+    public int getLabelAddress(String label){
+        for(int i = 0; i < dataMemory.getMemory().size(); i++){
+            DataStatement ds = dataMemory.getFromMem(i);
+            if (ds == null){
+                break;
+            }
+            if(ds.getLabel().equals(label)){
+                return i;
+            }
+        }
+        return Integer.MIN_VALUE;
+    }
+    
 
     public int getProgramCounter() {
         return programCounter;

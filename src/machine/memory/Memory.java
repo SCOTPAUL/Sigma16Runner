@@ -21,7 +21,7 @@ public class Memory<E> {
     }
 
     public void addToMem(int address, E value) {
-        memory.add(address, value);
+        memory.set(address, value);
     }
 
     public E getFromMem(int address) {

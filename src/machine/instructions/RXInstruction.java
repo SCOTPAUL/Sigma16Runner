@@ -56,9 +56,9 @@ public class RXInstruction extends Sigma16Instruction {
                 break;
             case("store"):
                 short valForMem = m.getRegister(destReg.getRegNum()).getValue();
-                int address = m.getValueFromMemory(this.memValue); //+ m.getRegister(this.indexFromLabel.getRegNum()).getValue();
-                if (address <= Short.MAX_VALUE && address >= Short.MIN_VALUE){
-                    m.getDataMemory().addToMem(address, new DataStatement(super.label, valForMem));
+                int address = m.getLabelAddress(this.memValue) + m.getRegister(this.indexFromLabel.getRegNum()).getValue();
+                if (address >= 0){
+                    m.getDataMemory().addToMem(address, new DataStatement(this.memValue, valForMem));
                     m.setProgramCounter(m.getProgramCounter() + 1);
                 }
                 else{
