@@ -5,7 +5,7 @@ package machine.instructions;
  *
  */
 public class DataStatement {
-    private String label;
+    private String label = null;
     private short value;
     
     public DataStatement(String label, short value){

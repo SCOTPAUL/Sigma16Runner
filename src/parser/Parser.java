@@ -24,10 +24,10 @@ public class Parser {
     private File sigma16File;
 
     private Memory<Sigma16Instruction> programMemory = new Memory<>();
-    private HashMap<String, Short> programLabelLookupTable;
+    private HashMap<String, Short> programLabelLookupTable = new HashMap<>();
 
     private Memory<DataStatement> dataMemory = new Memory<>();
-    private HashMap<String, Short> dataLabelLookupTable;
+    private HashMap<String, Short> dataLabelLookupTable = new HashMap<>();
 
 
     private short currentDataMemAddress = 0;
