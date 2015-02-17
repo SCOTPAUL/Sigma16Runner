@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 
 import machine.instructions.DataStatement;
 import machine.instructions.JumpInstruction;
@@ -23,7 +24,11 @@ public class Parser {
     private File sigma16File;
 
     private Memory<Sigma16Instruction> programMemory = new Memory<>();
+    private HashMap<String, Short> programLabelLookupTable;
+
     private Memory<DataStatement> dataMemory = new Memory<>();
+    private HashMap<String, Short> dataLabelLookupTable;
+
 
     private short currentDataMemAddress = 0;
     private short currentProgMemAddress = 0;
@@ -89,24 +94,44 @@ public class Parser {
                     // Decide what to do with the line
                     switch (lineType) {
                     case 0:
-                        dataMemory.addToMem(this.currentDataMemAddress++,
-                                parseDataStatement(splitLine));
-                        sb.append(parseDataStatement(splitLine));
+                        DataStatement ds = parseDataStatement(splitLine);
+                        if(ds.hasLabel()){
+                            dataLabelLookupTable.put(ds.getLabel(), currentDataMemAddress);
+                        }
+
+                        dataMemory.addToMem(currentDataMemAddress, ds);
+                        currentDataMemAddress++;
+                        sb.append(ds);
                         break;
                     case 1:
-                        programMemory.addToMem(this.currentProgMemAddress++,
-                                parseRRRInstruction(splitLine));
-                        sb.append(parseRRRInstruction(splitLine));
+                        RRRInstruction ri = parseRRRInstruction(splitLine);
+                        if(ri.hasLabel()){
+                            programLabelLookupTable.put(ri.getLabel(), currentProgMemAddress);
+                        }
+
+                        programMemory.addToMem(currentProgMemAddress, ri);
+                        currentProgMemAddress++;
+                        sb.append(ri);
                         break;
                     case 2:
-                        programMemory.addToMem(this.currentProgMemAddress++,
-                                parseRXInstruction(splitLine));
-                        sb.append(parseRXInstruction(splitLine));
+                        RXInstruction rx = parseRXInstruction(splitLine);
+                        if(rx.hasLabel()){
+                            programLabelLookupTable.put(rx.getLabel(), currentProgMemAddress);
+                        }
+
+                        programMemory.addToMem(currentProgMemAddress, rx);
+                        currentProgMemAddress++;
+                        sb.append(rx);
                         break;
                     case 3:
-                        programMemory.addToMem(this.currentProgMemAddress++,
-                                parseJumpInstruction(splitLine));
-                        sb.append(parseJumpInstruction(splitLine));
+                        JumpInstruction ji = parseJumpInstruction(splitLine);
+                        if(ji.hasLabel()){
+                            programLabelLookupTable.put(ji.getLabel(), currentProgMemAddress);
+                        }
+
+                        programMemory.addToMem(currentProgMemAddress, ji);
+                        currentProgMemAddress++;
+                        sb.append(ji);
                         break;
                     default:
                         break;
@@ -129,15 +154,23 @@ public class Parser {
         return this.programMemory;
     }
 
+    public HashMap<String, Short> getProgMemLabels(){
+        return programLabelLookupTable;
+    }
+
     public Memory<DataStatement> getDataMem() {
         return this.dataMemory;
+    }
+
+    public HashMap<String, Short> getDataMemLabels(){
+        return dataLabelLookupTable;
     }
 
     /**
      * Finds the type of a Sigma16 instruction based on the instruction's
      * opcode.
      * 
-     * @param line
+     * @param splitLine
      *            an instruction line to be have its type checked
      * @return 0 if data statement, 1 if RRR instruction, 2 if RX instruction, 3
      *         if parameterless jump instruction, else -1.

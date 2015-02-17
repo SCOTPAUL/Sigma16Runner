@@ -28,6 +28,14 @@ public abstract class Sigma16Instruction {
     public void setDestReg(Register destReg){
         this.destReg = destReg;
     }
+
+    public boolean hasLabel(){
+        return label != null;
+    }
+
+    public String getLabel(){
+        return label;
+    }
     
     public abstract void execute(Machine m);
     

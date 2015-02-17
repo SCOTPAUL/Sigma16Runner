@@ -30,7 +30,7 @@ public class RRRInstruction extends Sigma16Instruction {
     @Override
     public String toString(){
         StringBuilder sb = new StringBuilder();
-        if (label != null){
+        if (hasLabel()){
             sb.append("[").append(label).append("]");
         }
         return sb.append(opName).append(" ").append(destReg).append(",").append(firstReg).append(",").append(secondReg).toString();
@@ -43,51 +43,28 @@ public class RRRInstruction extends Sigma16Instruction {
         
         switch(opName){
             case("add"):
-                short addValue = (short) (firstReg.getValue() + secondReg.getValue());
-                destReg.setValue(addValue);
+                addExecute();
                 break;
             case("sub"):
-                short subValue = (short) (firstReg.getValue() - secondReg.getValue());
-                destReg.setValue(subValue);
+                subExecute();
                 break;
             case("mul"):
-                short mulValue = (short) ((firstReg.getValue() * secondReg.getValue()));
-                destReg.setValue(mulValue);
+                mulExecute();
                 break;
             case("div"):
-                short divValue = (short) ((firstReg.getValue() / secondReg.getValue()));
-                short remainder = (short) ((firstReg.getValue() % secondReg.getValue()));
-                destReg.setValue(divValue);
-                m.setRegister((byte) 15, remainder);
+                divExecute(m);
                 break;
             case("cmplt"):
-                if(firstReg.getValue() < secondReg.getValue()){
-                    destReg.setValue((short) 1);
-                }
-                else{
-                    destReg.setValue((short) 0);
-                }
+                cmpltExecute();
                 break;
             case("cmpeq"):
-                if(firstReg.getValue() == secondReg.getValue()){
-                    destReg.setValue((short) 1);
-                }
-                else{
-                    destReg.setValue((short) 0);
-                }
+                cmpeqExecute();
                 break;
             case("cmpgt"):
-                if(firstReg.getValue() > secondReg.getValue()){
-                    destReg.setValue((short) 1);
-                }
-                else{
-                    destReg.setValue((short) 0);
-                }
+                cmpgtExecute();
                 break;
             case("trap"):
-                if (destReg.getRegNum() == 0 && firstReg.getRegNum() == 0 && secondReg.getRegNum() == 0){
-                    m.terminate();
-                }
+                trapExecute(m);
                 break;
             default:
                 System.out.println(opName);
@@ -96,8 +73,65 @@ public class RRRInstruction extends Sigma16Instruction {
         }
         
         m.setRegister(destReg.getRegNum(), destReg.getValue());
-        m.setProgramCounter(m.getProgramCounter() + 1);        
+        m.incrementProgramCounter();
         
     }
+
+    private void addExecute(){
+        short addValue = (short) (firstReg.getValue() + secondReg.getValue());
+        destReg.setValue(addValue);
+    }
+
+    private void subExecute(){
+        short subValue = (short) (firstReg.getValue() - secondReg.getValue());
+        destReg.setValue(subValue);
+    }
+
+    private void mulExecute(){
+        short mulValue = (short) ((firstReg.getValue() * secondReg.getValue()));
+        destReg.setValue(mulValue);
+    }
+
+    private void divExecute(Machine m){
+        short divValue = (short) ((firstReg.getValue() / secondReg.getValue()));
+        short remainder = (short) ((firstReg.getValue() % secondReg.getValue()));
+        destReg.setValue(divValue);
+        m.setRegister((byte) 15, remainder);
+    }
+
+    private void cmpltExecute(){
+        if(firstReg.getValue() < secondReg.getValue()){
+            destReg.setValue((short) 1);
+        }
+        else{
+            destReg.setValue((short) 0);
+        }
+    }
+
+    private void cmpeqExecute(){
+        if(firstReg.getValue() == secondReg.getValue()){
+            destReg.setValue((short) 1);
+        }
+        else{
+            destReg.setValue((short) 0);
+        }
+    }
+
+    private void cmpgtExecute(){
+        if(firstReg.getValue() > secondReg.getValue()){
+            destReg.setValue((short) 1);
+        }
+        else{
+            destReg.setValue((short) 0);
+        }
+    }
+
+    private void trapExecute(Machine m){
+        if (destReg.getRegNum() == 0 && firstReg.getRegNum() == 0 && secondReg.getRegNum() == 0){
+            m.terminate();
+        }
+    }
+
+
 
 }

@@ -2,6 +2,7 @@ package machine;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import machine.instructions.DataStatement;
 import machine.instructions.Sigma16Instruction;
@@ -16,7 +17,9 @@ import parser.Parser;
 public class Machine {
     private Register[] registers;
     private Memory<Sigma16Instruction> programMemory;
+    private HashMap<String, Short> programLabelLookupTable;
     private Memory<DataStatement> dataMemory;
+    private HashMap<String, Short> dataLabelLookupTable;
     private Parser sigma16InstructionParser;
     private int programCounter;
     private boolean terminate;
@@ -34,6 +37,8 @@ public class Machine {
         this.dataMemory = sigma16InstructionParser.getDataMem();
         this.programCounter = 0;
         this.terminate = false;
+        this.dataLabelLookupTable = sigma16InstructionParser.getDataMemLabels();
+        this.programLabelLookupTable = sigma16InstructionParser.getProgMemLabels();
     }
     
     
@@ -68,28 +73,22 @@ public class Machine {
     }
     
     public int getValueFromMemory(String label){
-        for(DataStatement ds: dataMemory.getMemory()){
-            if (ds == null){
-                break;
-            }
-            if(ds.getLabel().equals(label)){
-                return (int) ds.getValue();
-            }
+        if(dataLabelLookupTable.containsKey(label)){
+            short index = dataLabelLookupTable.get(label);
+            return dataMemory.getFromMem(index).getValue();
         }
-        return Integer.MIN_VALUE;
+        else{
+            return Integer.MIN_VALUE;
+        }
     }
     
     public int getLabelAddress(String label){
-        for(int i = 0; i < dataMemory.getMemory().size(); i++){
-            DataStatement ds = dataMemory.getFromMem(i);
-            if (ds == null){
-                break;
-            }
-            if(ds.getLabel().equals(label)){
-                return i;
-            }
+        if(dataLabelLookupTable.containsKey(label)){
+            return dataLabelLookupTable.get(label);
         }
-        return Integer.MIN_VALUE;
+        else{
+            return Integer.MIN_VALUE;
+        }
     }
     
 
@@ -99,6 +98,14 @@ public class Machine {
 
     public void setProgramCounter(int programCounter) {
         this.programCounter = programCounter;
+    }
+
+    public void incrementProgramCounter(int increment){
+        programCounter += increment;
+    }
+
+    public void incrementProgramCounter(){
+        incrementProgramCounter(1);
     }
     
     public Register getRegister(byte regNo){

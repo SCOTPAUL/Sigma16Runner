@@ -17,6 +17,10 @@ public class DataStatement {
         return label;
     }
 
+    public boolean hasLabel(){
+        return label != null;
+    }
+
     public void setLabel(String label) {
         this.label = label;
     }
