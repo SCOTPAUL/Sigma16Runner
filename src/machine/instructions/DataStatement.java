@@ -36,8 +36,7 @@ public class DataStatement {
     @Override
     public String toString(){
         if (label != null) {
-            return new StringBuilder(label).append(": ").append(value)
-                    .toString();
+            return label + ": " + value;
         }
         else{
             return String.valueOf(value);

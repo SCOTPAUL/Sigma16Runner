@@ -13,8 +13,7 @@ import machine.registers.Register;
 public class RXInstruction extends Sigma16Instruction {
     
     public static final String[] RXInstructions = { "load", "lea", "store",
-            "jumpT", "jumpF" };
-    
+            "jumpt", "jumpf" };
     protected String memValue;
     protected Register indexFromLabel;
     
@@ -49,6 +48,14 @@ public class RXInstruction extends Sigma16Instruction {
             case("store"):
                 storeExecute(m);
                 break;
+            case("lea"):
+                leaExecute(m);
+                break;
+            case("jumpt"):
+                jumptExecute(m);
+                break;
+            case("jumpf"):
+                jumpfExecute(m);
             default:
                 break;
         }
@@ -57,11 +64,44 @@ public class RXInstruction extends Sigma16Instruction {
         
     }
 
+    private void jumpfExecute(Machine m) {
+        int regValue = m.getRegister(indexFromLabel.getRegNum()).getValue();
+
+        if(m.getRegister(destReg.getRegNum()).getValue() == 0){
+            m.setProgramCounter(m.getJumpLabelAddress(memValue) + regValue);
+        }
+        else {
+            m.incrementProgramCounter();
+        }
+    }
+
+    private void jumptExecute(Machine m) {
+        int regValue = m.getRegister(indexFromLabel.getRegNum()).getValue();
+
+        if(m.getRegister(destReg.getRegNum()).getValue() != 0){
+            m.setProgramCounter(m.getJumpLabelAddress(memValue) + regValue);
+        }
+        else {
+            m.incrementProgramCounter();
+        }
+    }
+
+    private void leaExecute(Machine m){
+        int val = Integer.valueOf(memValue);
+        if (val <= Short.MAX_VALUE && val >= Short.MIN_VALUE){
+            destReg.setValue((short) (val + m.getRegister(indexFromLabel.getRegNum()).getValue()));
+            m.incrementProgramCounter();
+        }
+        else {
+            throw new RuntimeException();
+        }
+    }
+
     private void loadExecute(Machine m){
         int valFromMem = m.getValueFromMemory(this.memValue);
         if (valFromMem <= Short.MAX_VALUE && valFromMem >= Short.MIN_VALUE){
             destReg.setValue((short) valFromMem);
-            m.setProgramCounter(m.getProgramCounter() + 1);
+            m.incrementProgramCounter();
         }
         else{
             // TODO: Make new exception for invalid memory label
@@ -74,7 +114,7 @@ public class RXInstruction extends Sigma16Instruction {
         int address = m.getLabelAddress(this.memValue) + m.getRegister(this.indexFromLabel.getRegNum()).getValue();
         if (address >= 0){
             m.getDataMemory().addToMem(address, new DataStatement(this.memValue, valForMem));
-            m.setProgramCounter(m.getProgramCounter() + 1);
+            m.incrementProgramCounter();
         }
         else{
             // TODO: Make new exception for invalid memory label

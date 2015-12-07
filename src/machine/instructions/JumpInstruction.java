@@ -41,8 +41,8 @@ public class JumpInstruction extends Sigma16Instruction{
 
     @Override
     public void execute(Machine m) {
-        // TODO Auto-generated method stub
-        
+        int regValue = m.getRegister(indexFromLabel.getRegNum()).getValue();
+        m.setProgramCounter(m.getJumpLabelAddress(memValue) + regValue);
     }
     
 

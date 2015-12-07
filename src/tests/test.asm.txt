@@ -2,6 +2,8 @@ load   R5,x[R0]   ; load x into R5
 
 add    R10,R5,R5  ; add 10 + 10 and store in R10
 
+lea    R3,5[R5]   ; add 5 to 10 and store in R3
+
 store  R10,y[R0]
 trap   R0,R0,R0   ; terminate execution
 

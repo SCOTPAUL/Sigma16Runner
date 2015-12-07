@@ -90,6 +90,15 @@ public class Machine {
             return Integer.MIN_VALUE;
         }
     }
+
+    public int getJumpLabelAddress(String label){
+        if(programLabelLookupTable.containsKey(label)){
+            return programLabelLookupTable.get(label);
+        }
+        else{
+            return Integer.MIN_VALUE;
+        }
+    }
     
 
     public int getProgramCounter() {
@@ -122,7 +131,7 @@ public class Machine {
     
     @Override
     public String toString(){
-        return new StringBuilder("PC: ").append(programCounter).append(" Registers: ").append(Arrays.toString(registers)).append(" Terminated: ").append(terminate).append(dataMemory.toString()).toString();
+        return "PC: " + programCounter + " Registers: " + Arrays.toString(registers) + " Terminated: " + terminate + dataMemory.toString();
     }
 
 }

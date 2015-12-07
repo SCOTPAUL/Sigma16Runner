@@ -6,11 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 
-import machine.instructions.DataStatement;
-import machine.instructions.JumpInstruction;
-import machine.instructions.RRRInstruction;
-import machine.instructions.RXInstruction;
-import machine.instructions.Sigma16Instruction;
+import machine.instructions.*;
 import machine.memory.Memory;
 import machine.registers.Register;
 
@@ -89,53 +85,53 @@ public class Parser {
                     // some sort of instruction memory
                     // TODO: Add support for lines which contain only a label.
                     String[] splitLine = splitLine(line);
-                    int lineType = checkStatementType(splitLine);
+                    InstructionType lineType = checkStatementType(splitLine);
 
                     // Decide what to do with the line
-                    switch (lineType) {
-                    case 0:
-                        DataStatement ds = parseDataStatement(splitLine);
-                        if(ds.hasLabel()){
-                            dataLabelLookupTable.put(ds.getLabel(), currentDataMemAddress);
-                        }
-
-                        dataMemory.addToMem(currentDataMemAddress, ds);
-                        currentDataMemAddress++;
-                        sb.append(ds);
-                        break;
-                    case 1:
-                        RRRInstruction ri = parseRRRInstruction(splitLine);
-                        if(ri.hasLabel()){
-                            programLabelLookupTable.put(ri.getLabel(), currentProgMemAddress);
-                        }
-
-                        programMemory.addToMem(currentProgMemAddress, ri);
-                        currentProgMemAddress++;
-                        sb.append(ri);
-                        break;
-                    case 2:
-                        RXInstruction rx = parseRXInstruction(splitLine);
-                        if(rx.hasLabel()){
-                            programLabelLookupTable.put(rx.getLabel(), currentProgMemAddress);
-                        }
-
-                        programMemory.addToMem(currentProgMemAddress, rx);
-                        currentProgMemAddress++;
-                        sb.append(rx);
-                        break;
-                    case 3:
-                        JumpInstruction ji = parseJumpInstruction(splitLine);
-                        if(ji.hasLabel()){
-                            programLabelLookupTable.put(ji.getLabel(), currentProgMemAddress);
-                        }
-
-                        programMemory.addToMem(currentProgMemAddress, ji);
-                        currentProgMemAddress++;
-                        sb.append(ji);
-                        break;
-                    default:
-                        break;
+                    if(lineType == null){
+                        return "";
                     }
+
+                    switch (lineType) {
+                        case DATA:
+                            DataStatement ds = parseDataStatement(splitLine);
+                            if(ds.hasLabel()){
+                                dataLabelLookupTable.put(ds.getLabel(), currentDataMemAddress);
+                            }
+
+                            dataMemory.addToMem(currentDataMemAddress++, ds);
+                            sb.append(ds);
+                            break;
+                        case RRR:
+                            RRRInstruction ri = parseRRRInstruction(splitLine);
+                            if(ri != null && ri.hasLabel()){
+                                programLabelLookupTable.put(ri.getLabel(), currentProgMemAddress);
+                            }
+
+                            programMemory.addToMem(currentProgMemAddress++, ri);
+                            sb.append(ri);
+                            break;
+                        case RX:
+                            RXInstruction rx = parseRXInstruction(splitLine);
+                            if(rx != null && rx.hasLabel()){
+                                programLabelLookupTable.put(rx.getLabel(), currentProgMemAddress);
+                            }
+
+                            programMemory.addToMem(currentProgMemAddress++, rx);
+                            sb.append(rx);
+                            break;
+                        case PARAMETERLESS_JUMP:
+                            JumpInstruction ji = parseJumpInstruction(splitLine);
+                            if(ji != null && ji.hasLabel()){
+                                programLabelLookupTable.put(ji.getLabel(), currentProgMemAddress);
+                            }
+
+                            programMemory.addToMem(currentProgMemAddress++, ji);
+                            sb.append(ji);
+                            break;
+                        default:
+                            break;
+                        }
 
                     sb.append("\n");
                 }
@@ -172,39 +168,37 @@ public class Parser {
      * 
      * @param splitLine
      *            an instruction line to be have its type checked
-     * @return 0 if data statement, 1 if RRR instruction, 2 if RX instruction, 3
-     *         if parameterless jump instruction, else -1.
+     * @return {@link InstructionType} representing instruction
      */
-    private int checkStatementType(String[] splitLine) {
+    private InstructionType checkStatementType(String[] splitLine) {
 
         if (splitLine[1].equals("data")) {
-            return 0;
+            return InstructionType.DATA;
         }
 
         for (String RRROpName : RRRInstruction.RRRInstructions) {
             if (splitLine[0].equals(RRROpName) && splitLine.length == 2) {
-                return 1;
+                return InstructionType.RRR;
             } else if (splitLine[1].equals(RRROpName) && splitLine.length == 3) {
-                return 1;
+                return InstructionType.RRR;
             }
         }
 
         for (String RXOpName : RXInstruction.RXInstructions) {
             if (splitLine[0].equals(RXOpName) && splitLine.length == 2) {
-                return 2;
+                return InstructionType.RX;
             } else if (splitLine[1].equals(RXOpName) && splitLine.length == 3) {
-                return 2;
+                return InstructionType.RX;
             }
         }
 
         if ((splitLine[0].equals("jump") && splitLine.length == 2)
                 || (splitLine[1].equals("jump") && splitLine.length == 3)) {
-            return 3;
+            return InstructionType.PARAMETERLESS_JUMP;
         }
 
-        // Line doesn't match any known pattern for a Sigma16 instruction
-        return -1;
-
+        // Error in line type
+        return null;
     }
 
     /**
@@ -375,7 +369,7 @@ public class Parser {
     
     @Override
     public String toString(){
-        return new StringBuilder(this.dataMemory.toString()).append(this.programMemory.toString()).toString();
+        return this.dataMemory.toString() + this.programMemory.toString();
     }
 
 }

@@ -1,0 +1,102 @@
+; Paul Cowie
+; 27/02/14
+
+; Program to find the nth prime in the fibonacci series
+
+; High Level
+
+; primeNo = 2
+; val1 = 1
+; val2 = 1
+;
+;
+; while primeNo < n:
+;     val2 = val1 + val2
+;
+;     k = 1
+;     while k < (val2)/2:
+;         if val2%k == 0:
+;             prime = False
+;             found = True
+;         k += 1
+;     if found == False:
+;         prime = True
+;
+;     if prime == True:
+;         primeNo += 1
+
+
+;Low Level
+
+; start
+;     primeNo = 2
+;     val1 = 1
+;     val2 = 2
+;     if n == 1 then goto done
+;
+; loop
+;     val2 = val1 + val2
+;     k = 1
+;
+; primeLoop
+;     if k == (val2)/2 goto prime
+;     if val2%k == 0 goto notPrime
+;     k += 1
+;     goto primeLoop
+;
+; prime
+;     primeNo += 1
+;
+; notPrime
+;     if primeNo != n goto loop
+;
+; done
+;     terminate
+
+; Main
+
+; R1 = val1
+; R2 = val2
+; R3 = val3
+; R4 = primeNo
+; R5 = k
+; R6 = bool
+; R9 = n
+; R10 = constant 2
+; R15 = remainder
+
+start       lea     R4,2[R0]         ;primeNo = 2
+            lea     R1,1[R0]         ;val1 = 1
+            lea     R2,2[R0]         ;val2 = 2
+            lea     R10,2[R0]        ;R10 = constant 2
+            load    R9,n[R0]         ;R9 = n
+
+            cmpeq   R6,R9,R4         ;R6 = n == 1
+            jumpt   R6,done[R0]      ;if n == 1 goto done
+
+loop        add     R3,R2,R1         ;val3 = val1 + val2
+            add     R5,R10,R0       ;k = 2
+
+primeLoop   div     R7,R3,R10        ;R7 = (val3)/2
+            cmpeq   R6,R5,R7         ;R6 = k == (val3)/2
+            jumpt   R6,prime[R0]     ;if k == (val3)/2 goto prime
+
+            div     R7,R3,R5         ;R7 = (val3)/k
+            cmpeq   R6,R15,R0        ;R6 = (val3)%k == 0
+            jumpt   R6,notPrime[R0]  ;if (val3)%k == 0 goto notPrime
+
+            lea     R5,1[R5]         ;k += 1
+            jump    primeLoop[R0]    ;goto primeLoop
+
+prime       lea     R4,1[R4]         ;primeNo += 1
+
+notPrime    cmpeq   R6,R4,R9         ;R6 = primeLoop == n
+            lea     R1,0[R2]         ;val1 = val2
+            lea     R2,0[R3]         ;val2 = val3
+            jumpf   R6,loop[R0]      ;if primeLoop != n goto loop
+
+done        trap    R0,R0,R0         ;terminate
+
+;Data
+
+n           data    7
