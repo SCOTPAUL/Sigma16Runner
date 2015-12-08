@@ -87,7 +87,13 @@ public class RXInstruction extends Sigma16Instruction {
     }
 
     private void leaExecute(Machine m){
-        int val = Integer.valueOf(memValue);
+        int val;
+        try {
+            val = Integer.parseInt(memValue);
+        }
+        catch(NumberFormatException e){
+            val = m.getLabelAddress(memValue);
+        }
         if (val <= Short.MAX_VALUE && val >= Short.MIN_VALUE){
             destReg.setValue((short) (val + m.getRegister(indexFromLabel.getRegNum()).getValue()));
             m.incrementProgramCounter();
@@ -98,7 +104,7 @@ public class RXInstruction extends Sigma16Instruction {
     }
 
     private void loadExecute(Machine m){
-        int valFromMem = m.getValueFromMemory(this.memValue);
+        int valFromMem = m.getDataMemory().getFromMem(m.getLabelAddress(memValue) + m.getRegister(indexFromLabel.getRegNum()).getValue()).getValue();
         if (valFromMem <= Short.MAX_VALUE && valFromMem >= Short.MIN_VALUE){
             destReg.setValue((short) valFromMem);
             m.incrementProgramCounter();
@@ -112,8 +118,15 @@ public class RXInstruction extends Sigma16Instruction {
     private void storeExecute(Machine m){
         short valForMem = m.getRegister(destReg.getRegNum()).getValue();
         int address = m.getLabelAddress(this.memValue) + m.getRegister(this.indexFromLabel.getRegNum()).getValue();
+
         if (address >= 0){
-            m.getDataMemory().addToMem(address, new DataStatement(this.memValue, valForMem));
+            if(address != m.getLabelAddress(this.memValue)){
+                m.getDataMemory().addToMem(address, new DataStatement(null, valForMem));
+            }
+            else {
+                m.getDataMemory().addToMem(address, new DataStatement(this.memValue, valForMem));
+            }
+
             m.incrementProgramCounter();
         }
         else{

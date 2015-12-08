@@ -5,5 +5,5 @@ package machine.instructions;
  */
 
 public enum InstructionType {
-    DATA, RRR, RX, PARAMETERLESS_JUMP
+    DATA, RRR, RX, PARAMETERLESS_JUMP, LABEL
 }

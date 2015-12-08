@@ -127,8 +127,15 @@ public class RRRInstruction extends Sigma16Instruction {
     }
 
     private void trapExecute(Machine m){
-        if (destReg.getRegNum() == 0 && firstReg.getRegNum() == 0 && secondReg.getRegNum() == 0){
+        if (m.getRegister(destReg.getRegNum()).getValue() == 0 && m.getRegister(firstReg.getRegNum()).getValue() == 0 && m.getRegister(secondReg.getRegNum()).getValue() == 0){
             m.terminate();
+        }
+        else if(m.getRegister(destReg.getRegNum()).getValue() == 2){
+            int currentChar = m.getRegister(firstReg.getRegNum()).getValue();
+            int end = currentChar + m.getRegister(secondReg.getRegNum()).getValue();
+            for(; currentChar < end; ++currentChar){
+                System.out.print(Character.toString((char) m.getDataMemory().getFromMem(currentChar).getValue()));
+            }
         }
     }
 

@@ -1,0 +1,227 @@
+;-----------------------------------------------------------------------
+; Sigma16 program BarChart
+; CS1 systems Exercise 1, 2014
+; Paul Cowie, Lab group 07
+;-----------------------------------------------------------------------
+
+
+; This program prints a bar chart showing the values in an array x
+; containing a sequence of n integers.  There is also an integer limit
+; that is used to limit the length of output lines.
+
+; There is one line of output for each element of x, consisting of a
+; row of asterisks (*).  Normally, the number of asterisks in line is
+; x[i].  However, if x[i] is negative, then a minus sign is printed
+; instead of asterisks.  Furthermore, the number of asterisks printed
+; must never exceed limit.  If x[i] > limit then only limit asterisks
+; are printed, and they are followed by a greater-than sign (>) which
+; indicates that the output was truncated.
+
+;-----------------------------------------------------------------------
+; High level algorithm
+;
+; while n != 0
+;     for i = 0 to n-1
+;        k = 0
+;        if x[i] < 0
+;           then out[k] = '-'
+;           k = k + 1
+;        else
+;            while k < x[i] && k < limit do
+;                out[k] = '*'
+;                k = k + 1
+;                if k >= limit
+;                    then out[k] = '>'
+;                    k = k + 1
+;                    break
+;     out[k] = newline character
+;     write out with length = k
+
+;-----------------------------------------------------------------------
+; Low level algorithm
+;
+; start
+;     load the limit and n into registers
+;     if n = 0 goto done
+;     i = 0
+; loop
+;     k = 0
+;     load x[i]
+;     if x[i] = 0 goto write
+;     else if x[i] >= 0 goto positive
+; negative
+;     out[k] = "-"
+;     k += 1
+;     goto write
+; positive
+;     out[k] = "*"
+;     k += 1
+;     if k >= x[i] goto write
+;     else if k >= limit goto gtlimit
+;     else goto positive
+; gtlimit
+;     out[k] = ">"
+;     k += 1
+; write
+;     out[k] = newline character
+;     k += 1
+;     print out
+;     i += 1
+;     if i < n goto loop
+; done
+;     terminate
+
+;-----------------------------------------------------------------------
+; Assembly language implementation
+
+;R1 = i
+;R2 = k
+;R3 = x[i]
+;R4 = limit
+;R5 = n
+;R6 = bool
+
+
+start      ;load the limit and n into registers
+           load    R4,limit[R0]       ;sets R4 to the value of limit in memory
+           load    R5,n[R0]           ;sets R5 to the value of n in memory
+
+           ;if n == 0 goto done
+           cmpeq   R6,R5,R0           ;R6 holds n == 0
+           jumpt   R6,done[R0]        ;if R6 is true, jump to done
+
+           ;i = 0
+           lea     R1,0[R0]           ;sets R1 (i) to 0
+
+
+loop       ;k = 0
+           lea     R2,0[R0]           ;sets R2 (k) to 0
+
+           ;load x[i]
+           load    R3,x[R1]           ;loads the ith value of array x into R3 from memory
+
+           ;if x[i] = 0 goto write
+           cmpeq   R6,R3,R0           ;R6 holds x[i] == 0
+           jumpt   R6,write[R0]       ;if R6 is true, jump to write
+
+           ;else if x[i] >= 0 goto positive
+           cmplt   R6,R3,R0           ;R6 holds x[i] < 0
+           jumpf   R6,positive[R0]    ;R6 is false, jump to positive
+
+
+negative   ;out[k] = "-"
+           load    R7,minus[R0]       ;load the ascii value for "-" into R7 from memory
+           store   R7,out[R2]         ;store out[k] = "-" in memory
+
+           ;k += 1
+           lea     R2,1[R2]           ;increments R2 (k) by 1
+
+           ;goto write
+           jump    write[R0]          ;unconditional jump to write
+
+
+positive   ;out[k] = "*"
+           load    R7,star[R0]        ;load the ascii value for "*" into R7 from memory
+           store   R7,out[R2]         ;store out[k] = "*" in memory
+
+           ;k += 1
+           lea     R2,1[R2]           ;increments R2 (k) by 1
+
+           ;if k >= x[i] goto write
+           cmplt   R6,R2,R3           ;R6 holds k < x[i]
+           jumpf   R6,write[R0]       ;if R6 is false, jump to write
+
+           ;else if k >= limit goto gtlimit
+           cmplt   R6,R2,R4           ;R6 holds k < limit
+           jumpf   R6,gtlimit[R0]     ;if R6 is false, jump to gtlimit
+
+           ;else goto positive
+           jump    positive[R0]       ;unconditional jump to positive
+
+
+gtlimit    ;out[k] = ">"
+           load    R7,gt[R0]          ;load the ascii value for ">" into R7 from memory
+           store   R7,out[R2]         ;store out[k] = ">" in memory
+
+           ;k += 1
+           lea     R2,1[R2]           ;increments R2 (k) by 1
+
+
+write      ;out[k] = newline character
+           load    R7,newline[R0]     ;load the ascii value for newline into R7
+           store   R7,out[R2]         ;store out[k] = newline char in memory
+
+           ;k += 1
+           lea     R2,1[R2]           ;increments R2 (k) by 1
+
+           ;print out
+           lea     R8,2[R0]           ;sets R8 to 2
+           lea     R9,out[R0]         ;sets R9 to address of 0th value of out
+           trap    R8,R9,R2           ;writes contents of out with length of R2 (k)
+
+           ;i += 1
+           lea     R1,1[R1]           ;increments R1 (i) by 1
+
+           ;if i < n goto loop
+           cmplt   R6,R1,R5           ;R6 holds i < n
+           jumpt   R6,loop[R0]        ;if R6 is true, jump to loop
+
+
+done       ;terminate
+           trap    R0,R0,R0           ;ends the program
+
+
+
+
+
+
+;-----------------------------------------------------------------------
+; Variables - these initial values may be changed
+
+limit   data    10    ; maximum number of * to write
+n       data    15    ; size of array x
+x       data     1    ; x[0]
+        data     2    ; x[1]
+        data     0    ; x[2]
+        data     3    ; x[3]
+        data    -2    ; x[4]
+        data     7    ; x[5]
+        data     8    ; x[6]
+        data     9    ; x[7]
+        data    10    ; x[8]
+        data    11    ; x[9]
+        data    12    ; x[10]
+        data    50    ; x[11]
+        data     3    ; x[12]
+        data     2    ; x[13]
+        data     1    ; x[14]
+
+;-----------------------------------------------------------------------
+; Constants - initial values should not be changed
+
+minus   data  $002d   ; code for '-'
+gt      data  $003e   ; code for '>'
+newline data  $000a   ; code for newline
+star    data  $002a   ; code for '*'
+
+out     data  $0020   ; out[0]
+        data  $0020   ; out[1]
+        data  $0020   ; out[2]
+        data  $0020   ; out[3]
+        data  $0020   ; out[4]
+        data  $0020   ; out[5]
+        data  $0020   ; out[6]
+        data  $0020   ; out[7]
+        data  $0020   ; out[8]
+        data  $0020   ; out[9]
+        data  $0020   ; out[10]
+        data  $0020   ; out[11]
+        data  $0020   ; out[12]
+        data  $0020   ; out[13]
+        data  $0020   ; out[14]
+        data  $0020   ; out[15]
+        data  $0020   ; out[16]
+        data  $0020   ; out[17]
+        data  $0020   ; out[18]
+        data  $0020   ; out[19]
+        data  $0020   ; out[20]

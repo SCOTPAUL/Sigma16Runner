@@ -2,20 +2,30 @@ package tests;
 
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 
 import machine.Machine;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class MachineTest {
     public Machine m;
     public String currentDir;
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     
     @Before
     public void setUp() throws Exception {
         currentDir = new File("").getAbsolutePath();
+        System.setOut(new PrintStream(outContent));
+    }
+
+    @After
+    public void cleanUp() {
+        System.setOut(null);
     }
     
     /**
@@ -25,7 +35,6 @@ public class MachineTest {
     public void testEndExecution() {
         m =  new Machine(currentDir + "/src/tests/test.asm.txt");
         m.executeFile();
-        System.out.println(m);
         assertTrue(m.getProgramCounter() == 5);
         assertTrue(m.getDataMemory().getFromMem(1).getValue() == 20);
     }
@@ -34,15 +43,13 @@ public class MachineTest {
     public void testGreaterThanInstruction() {
         m =  new Machine(currentDir + "/src/tests/test1.asm.txt");
         m.executeFile();
-        System.out.println(m);
-        assertTrue(m.getRegister((byte)7).getValue() == (short)1);        
+        assertTrue(m.getRegister((byte)7).getValue() == (short)1);
     }
 
     @Test
     public void testLeaInstruction() {
         m =  new Machine(currentDir + "/src/tests/test.asm.txt");
         m.executeFile();
-        System.out.println(m);
         assertTrue(m.getRegister((byte)3).getValue() == (short)15);
     }
 
@@ -50,16 +57,37 @@ public class MachineTest {
     public void testJumpTInstruction() {
         m =  new Machine(currentDir + "/src/tests/jump.asm.txt");
         m.executeFile();
-        System.out.println(m);
         assertTrue(m.getRegister((byte)1).getValue() == (short)10);
     }
 
     @Test
-    public void testPrimesInstruction() {
+    public void testPrimes() {
         m =  new Machine(currentDir + "/src/tests/primes.asm.txt");
         m.executeFile();
-        System.out.println(m);
         assertTrue(m.getRegister((byte)3).getValue() == (short)1597);
+    }
+
+    @Test
+    public void testBarChart() {
+        m = new Machine(currentDir + "/src/tests/bar-chart.asm.txt");
+        m.executeFile();
+        assertEquals(
+                "*\n" +
+                "**\n" +
+                "\n" +
+                "***\n" +
+                "-\n" +
+                "*******\n" +
+                "********\n" +
+                "*********\n" +
+                "**********\n" +
+                "**********>\n" +
+                "**********>\n" +
+                "**********>\n" +
+                "***\n" +
+                "**\n" +
+                "*\n",
+                outContent.toString());
     }
 
 }

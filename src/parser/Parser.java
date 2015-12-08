@@ -4,8 +4,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 
+import machine.Machine;
 import machine.instructions.*;
 import machine.memory.Memory;
 import machine.registers.Register;
@@ -25,16 +27,19 @@ public class Parser {
     private Memory<DataStatement> dataMemory = new Memory<>();
     private HashMap<String, Short> dataLabelLookupTable = new HashMap<>();
 
+    private Machine m;
 
     private short currentDataMemAddress = 0;
     private short currentProgMemAddress = 0;
 
-    public Parser(File textFile) {
+    public Parser(Machine m, File textFile) {
         this.sigma16File = textFile;
+        this.m = m;
     }
 
-    public Parser(String textFile) {
-        this(new File(textFile));
+    public Parser(Machine m, String textFile) {
+        this(m, new File(textFile));
+
 
     }
 
@@ -93,6 +98,15 @@ public class Parser {
                     }
 
                     switch (lineType) {
+                        case LABEL:
+                            Label label = parseLabelStatement(splitLine);
+                            if(label.hasLabel()){
+                                programLabelLookupTable.put(label.getLabel(), currentProgMemAddress);
+                            }
+
+                            programMemory.addToMem(currentProgMemAddress++, label);
+                            sb.append(label);
+                            break;
                         case DATA:
                             DataStatement ds = parseDataStatement(splitLine);
                             if(ds.hasLabel()){
@@ -172,7 +186,11 @@ public class Parser {
      */
     private InstructionType checkStatementType(String[] splitLine) {
 
-        if (splitLine[1].equals("data")) {
+        if(splitLine.length == 1){
+            return InstructionType.LABEL;
+        }
+
+        if (splitLine[0].equals("data") || (splitLine.length > 2 && splitLine[1].equals("data"))) {
             return InstructionType.DATA;
         }
 
@@ -210,11 +228,36 @@ public class Parser {
      * @return new DataStatement representing the instruction
      */
     private DataStatement parseDataStatement(String[] splitLine) {
-        String label = splitLine[0];
-        short value = Short.parseShort(splitLine[2]);
+        String label = null;
+        short value;
 
+        if(splitLine.length > 2) {
+            label = splitLine[0];
+            if (splitLine[2].startsWith("$")) {
+                value = Short.valueOf(splitLine[2].substring(1), 16);
+            } else {
+                value = Short.parseShort(splitLine[2]);
+            }
+
+        }
+        else {
+            if (splitLine[1].startsWith("$")) {
+                value = Short.valueOf(splitLine[1].substring(1), 16);
+            } else {
+                value = Short.parseShort(splitLine[1]);
+            }
+
+        }
         return new DataStatement(label, value);
+    }
 
+    /**
+     * Creates a new label object from a label line in the file
+     * @param splitLine the instruction line split on each whitespace character sequence
+     * @return new label representing the instruction
+     */
+    private Label parseLabelStatement(String[] splitLine){
+        return new Label(splitLine[0]);
     }
 
     /**
@@ -231,7 +274,7 @@ public class Parser {
             String opName = splitLine[0];
             String[] labelParts = splitLine[1].split("\\[");
             String value = labelParts[0];
-            Register indexFromLabel = new Register(Byte.parseByte(labelParts[1]
+            Register indexFromLabel = new Register(m, Byte.parseByte(labelParts[1]
                     .replaceAll("[\\]R]", "")));
             return new JumpInstruction(opName, value, indexFromLabel);
 
@@ -240,7 +283,7 @@ public class Parser {
             String opName = splitLine[1];
             String[] labelParts = splitLine[2].split("\\[");
             String value = labelParts[0];
-            Register indexFromLabel = new Register(Byte.parseByte(labelParts[1]
+            Register indexFromLabel = new Register(m, Byte.parseByte(labelParts[1]
                     .replaceAll("[\\]R]", "")));
             return new JumpInstruction(opName, value, indexFromLabel, label);
         } else {
@@ -266,7 +309,7 @@ public class Parser {
         Register[] registers = new Register[3];
 
         for (int i = 0; i < rCodes.length; i++) {
-            registers[i] = new Register(Byte.parseByte(rCodes[i].replaceAll(
+            registers[i] = new Register(m, Byte.parseByte(rCodes[i].replaceAll(
                     "R", "")));
 
         }
@@ -350,9 +393,9 @@ public class Parser {
     private RXInstruction parseRXInstruction(String[] splitLine) {
         String opName = splitLine[splitLine.length - 2];
         String[] codeParts = splitRXCode(splitLine[splitLine.length - 1]);
-        Register destReg = new Register(Byte.parseByte(codeParts[0]));
+        Register destReg = new Register(m, Byte.parseByte(codeParts[0]));
         String value = codeParts[1];
-        Register indexFromLabel = new Register(Byte.parseByte(codeParts[2]));
+        Register indexFromLabel = new Register(m, Byte.parseByte(codeParts[2]));
 
         if (splitLine.length == 2) {
             return new RXInstruction(opName, destReg, value, indexFromLabel);

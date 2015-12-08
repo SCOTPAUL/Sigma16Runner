@@ -28,10 +28,10 @@ public class Machine {
     public Machine(File fileName){
         this.registers = new Register[16];
         for(byte i=0; i < 16; i++){
-            registers[i] = new Register(i);
+            registers[i] = new Register(this, i);
         }
         
-        this.sigma16InstructionParser = new Parser(fileName);
+        this.sigma16InstructionParser = new Parser(this, fileName);
         this.sigma16InstructionParser.parse();
         this.programMemory = sigma16InstructionParser.getProgMem();
         this.dataMemory = sigma16InstructionParser.getDataMem();

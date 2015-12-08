@@ -1,17 +1,21 @@
 package machine.registers;
 
+import machine.Machine;
+
 public class Register {
     
     private byte regNum;
     private short value;
+    private Machine m;
     
-    public Register(byte regNum) throws RegisterNumberInvalidException{
+    public Register(Machine m, byte regNum) throws RegisterNumberInvalidException{
         if (regNum < 0 || regNum > RegisterFile.MAX_REG_NUM ){
             throw new RegisterNumberInvalidException();
         }
         else {
             this.regNum = regNum;
             this.value = 0;
+            this.m = m;
         }
     }
     
@@ -35,7 +39,7 @@ public class Register {
     
     @Override
     public String toString(){
-        return new StringBuilder("R").append(regNum).append("(").append(value).append(")").toString();
+        return "R" + regNum + "(" + m.getRegister(getRegNum()).getValue() + ")";
     }
 
 }
