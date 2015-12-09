@@ -92,6 +92,12 @@ public class MachineTest {
     }
 
     @Test
+    public void testDotProd(){
+        main.Sigma16RunnerMain.main(new String[]{"-s", currentDir + "/test/dot-product.asm.txt"});
+        assertTrue(outContent.toString().contains("dot: 34"));
+    }
+
+    @Test
     public void testMachineStatusFlag() {
         main.Sigma16RunnerMain.main(new String[]{"-s", currentDir + "/test/bar-chart.asm.txt"});
         assertTrue(outContent.toString().contains("Terminated: true"));
