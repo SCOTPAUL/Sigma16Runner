@@ -10,7 +10,7 @@
   
   <property name="sigma16runner.output.dir" value="${module.sigma16runner.basedir}/out/production/Sigma16Runner"/>
   <property name="sigma16runner.testoutput.dir" value="${module.sigma16runner.basedir}/out/test/Sigma16Runner"/>
-  
+
   <path id="sigma16runner.module.bootclasspath">
     <!-- Paths to be included in compilation bootclasspath -->
   </path>
@@ -60,18 +60,24 @@
     </dirset>
   </path>
   
+  <path id="sigma16runner.module.test.sourcepath">
+    <dirset dir="${module.sigma16runner.basedir}">
+      <include name="test"/>
+    </dirset>
+  </path>
+  
   
   <target name="compile.module.sigma16runner" depends="compile.module.sigma16runner.production,compile.module.sigma16runner.tests" description="Compile module Sigma16Runner"/>
   
-  <target name="compile.module.sigma16runner.production" depends="register.custom.compilers" description="Compile module Sigma16Runner; production classes">
+  <target name="compile.module.sigma16runner.production" description="Compile module Sigma16Runner; production classes">
     <mkdir dir="${sigma16runner.output.dir}"/>
-    <javac2 destdir="${sigma16runner.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.sigma16runner}/javac">
+    <javac destdir="${sigma16runner.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.sigma16runner}/javac">
       <compilerarg line="${compiler.args.sigma16runner}"/>
       <bootclasspath refid="sigma16runner.module.bootclasspath"/>
       <classpath refid="sigma16runner.module.production.classpath"/>
       <src refid="sigma16runner.module.sourcepath"/>
       <patternset refid="excluded.from.compilation.sigma16runner"/>
-    </javac2>
+    </javac>
     
     <copy todir="${sigma16runner.output.dir}">
       <fileset dir="${module.sigma16runner.basedir}/src">
@@ -81,10 +87,50 @@
     </copy>
   </target>
   
-  <target name="compile.module.sigma16runner.tests" depends="register.custom.compilers,compile.module.sigma16runner.production" description="compile module Sigma16Runner; test classes" unless="skip.tests"/>
+  <target name="compile.module.sigma16runner.tests" depends="compile.module.sigma16runner.production" description="compile module Sigma16Runner; test classes" unless="skip.tests">
+    <mkdir dir="${sigma16runner.testoutput.dir}"/>
+    <javac destdir="${sigma16runner.testoutput.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.sigma16runner}/javac">
+      <compilerarg line="${compiler.args.sigma16runner}"/>
+      <bootclasspath refid="sigma16runner.module.bootclasspath"/>
+      <classpath refid="sigma16runner.module.classpath"/>
+      <src refid="sigma16runner.module.test.sourcepath"/>
+      <patternset refid="excluded.from.compilation.sigma16runner"/>
+    </javac>
+    
+    <copy todir="${sigma16runner.testoutput.dir}">
+      <fileset dir="${module.sigma16runner.basedir}/test">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
   
   <target name="clean.module.sigma16runner" description="cleanup module">
     <delete dir="${sigma16runner.output.dir}"/>
     <delete dir="${sigma16runner.testoutput.dir}"/>
+  </target>
+
+  <target name="test.module.sigma16runner" description="run all junit tests">
+    <!-- Debug output
+            <property name="test.class.path" refid="test.class.path"/>
+            <echo message="${test.class.path}"/>
+    -->
+    <mkdir dir="${sigma16runner.testoutput.dir}/reports"/>
+    <junit printsummary="yes" haltonfailure="false">
+      <classpath refid="sigma16runner.runtime.module.classpath"/>
+      <formatter type="xml"/>
+      <formatter type="plain" usefile="false" /> <!-- to screen -->
+      <batchtest fork="yes" todir="${sigma16runner.testoutput.dir}/reports">
+        <fileset dir="${sigma16runner.testoutput.dir}">
+          <include name="**/*Test.class"/>
+        </fileset>
+      </batchtest>
+    </junit>
+    <junitreport todir="${sigma16runner.testoutput.dir}/reports">
+      <fileset dir="${sigma16runner.testoutput.dir}/reports">
+        <include name="TEST-*.xml"/>
+      </fileset>
+      <report todir="${sigma16runner.testoutput.dir}/reports" format="frames"/>
+    </junitreport>
   </target>
 </project>

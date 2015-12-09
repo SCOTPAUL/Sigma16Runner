@@ -1,4 +1,4 @@
-package tests;
+package test;
 
 import static org.junit.Assert.*;
 
@@ -33,7 +33,7 @@ public class MachineTest {
      */
     @Test
     public void testEndExecution() {
-        m =  new Machine(currentDir + "/src/tests/test.asm.txt");
+        m =  new Machine(currentDir + "/test/test.asm.txt");
         m.executeFile();
         assertTrue(m.getProgramCounter() == 5);
         assertTrue(m.getDataMemory().getFromMem(1).getValue() == 20);
@@ -41,35 +41,35 @@ public class MachineTest {
     
     @Test
     public void testGreaterThanInstruction() {
-        m =  new Machine(currentDir + "/src/tests/test1.asm.txt");
+        m =  new Machine(currentDir + "/test/test1.asm.txt");
         m.executeFile();
         assertTrue(m.getRegister((byte)7).getValue() == (short)1);
     }
 
     @Test
     public void testLeaInstruction() {
-        m =  new Machine(currentDir + "/src/tests/test.asm.txt");
+        m =  new Machine(currentDir + "/test/test.asm.txt");
         m.executeFile();
         assertTrue(m.getRegister((byte)3).getValue() == (short)15);
     }
 
     @Test
     public void testJumpTInstruction() {
-        m =  new Machine(currentDir + "/src/tests/jump.asm.txt");
+        m =  new Machine(currentDir + "/test/jump.asm.txt");
         m.executeFile();
         assertTrue(m.getRegister((byte)1).getValue() == (short)10);
     }
 
     @Test
     public void testPrimes() {
-        m =  new Machine(currentDir + "/src/tests/primes.asm.txt");
+        m =  new Machine(currentDir + "/test/primes.asm.txt");
         m.executeFile();
         assertTrue(m.getRegister((byte)3).getValue() == (short)1597);
     }
 
     @Test
     public void testBarChart() {
-        m = new Machine(currentDir + "/src/tests/bar-chart.asm.txt");
+        m = new Machine(currentDir + "/test/bar-chart.asm.txt");
         m.executeFile();
         assertEquals(
                 "*\n" +
