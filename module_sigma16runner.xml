@@ -10,39 +10,31 @@
   
   <property name="sigma16runner.output.dir" value="${module.sigma16runner.basedir}/out/production/Sigma16Runner"/>
   <property name="sigma16runner.testoutput.dir" value="${module.sigma16runner.basedir}/out/test/Sigma16Runner"/>
-
+  
   <path id="sigma16runner.module.bootclasspath">
     <!-- Paths to be included in compilation bootclasspath -->
   </path>
   
   <path id="sigma16runner.module.production.classpath">
     <path refid="${module.jdk.classpath.sigma16runner}"/>
-    <pathelement location="${idea.home}/lib/hamcrest-core-1.3.jar"/>
-    <pathelement location="${idea.home}/lib/hamcrest-library-1.3.jar"/>
-    <pathelement location="${idea.home}/lib/junit-4.11.jar"/>
+    <path refid="library.junit4.classpath"/>
   </path>
   
   <path id="sigma16runner.runtime.production.module.classpath">
     <pathelement location="${sigma16runner.output.dir}"/>
-    <pathelement location="${idea.home}/lib/hamcrest-core-1.3.jar"/>
-    <pathelement location="${idea.home}/lib/hamcrest-library-1.3.jar"/>
-    <pathelement location="${idea.home}/lib/junit-4.11.jar"/>
+    <path refid="library.junit4.classpath"/>
   </path>
   
   <path id="sigma16runner.module.classpath">
     <path refid="${module.jdk.classpath.sigma16runner}"/>
     <pathelement location="${sigma16runner.output.dir}"/>
-    <pathelement location="${idea.home}/lib/hamcrest-core-1.3.jar"/>
-    <pathelement location="${idea.home}/lib/hamcrest-library-1.3.jar"/>
-    <pathelement location="${idea.home}/lib/junit-4.11.jar"/>
+    <path refid="library.junit4.classpath"/>
   </path>
   
   <path id="sigma16runner.runtime.module.classpath">
     <pathelement location="${sigma16runner.testoutput.dir}"/>
     <pathelement location="${sigma16runner.output.dir}"/>
-    <pathelement location="${idea.home}/lib/hamcrest-core-1.3.jar"/>
-    <pathelement location="${idea.home}/lib/hamcrest-library-1.3.jar"/>
-    <pathelement location="${idea.home}/lib/junit-4.11.jar"/>
+    <path refid="library.junit4.classpath"/>
   </path>
   
   
@@ -119,7 +111,6 @@
     <junit printsummary="yes" haltonfailure="false">
       <classpath refid="sigma16runner.runtime.module.classpath"/>
       <formatter type="xml"/>
-      <formatter type="plain" usefile="false" /> <!-- to screen -->
       <batchtest fork="yes" todir="${sigma16runner.testoutput.dir}/reports">
         <fileset dir="${sigma16runner.testoutput.dir}">
           <include name="**/*Test.class"/>

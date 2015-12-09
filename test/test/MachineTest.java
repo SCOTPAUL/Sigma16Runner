@@ -51,7 +51,7 @@ public class MachineTest {
         m =  new Machine(currentDir + "/test/test.asm.txt");
         m.executeFile();
         assertTrue(m.getRegister((byte)3).getValue() == (short)15);
-        
+
     }
 
     @Test

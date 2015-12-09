@@ -85,6 +85,15 @@
   <property name="project.jdk.bin" value="${jdk.bin.1.7}"/>
   <property name="project.jdk.classpath" value="jdk.classpath.1.7"/>
   
+  
+  <!-- Project Libraries -->
+  
+  <path id="library.junit4.classpath">
+    <pathelement location="${basedir}/lib/hamcrest-core-1.3.jar"/>
+    <pathelement location="${basedir}/lib/hamcrest-library-1.3.jar"/>
+    <pathelement location="${basedir}/lib/junit-4.11.jar"/>
+  </path>
+  
   <!-- Modules -->
   
   <import file="${basedir}/module_sigma16runner.xml"/>
@@ -96,9 +105,8 @@
   <target name="clean" depends="clean.module.sigma16runner" description="cleanup all"/>
   
   <target name="build.modules" depends="init, clean, compile.module.sigma16runner" description="build all modules"/>
-
-  <target name="test" depends="build.modules, test.module.sigma16runner">
-  </target>
-
+  
   <target name="all" depends="build.modules" description="build all"/>
+
+  <target name="test" depends="build.modules, test.module.sigma16runner" description="test all"/>
 </project>
