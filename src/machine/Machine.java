@@ -20,7 +20,6 @@ public class Machine {
     private HashMap<String, Short> programLabelLookupTable;
     private Memory<DataStatement> dataMemory;
     private HashMap<String, Short> dataLabelLookupTable;
-    private Parser sigma16InstructionParser;
     private int programCounter;
     private boolean terminate;
     
@@ -30,9 +29,9 @@ public class Machine {
         for(byte i=0; i < 16; i++){
             registers[i] = new Register(this, i);
         }
-        
-        this.sigma16InstructionParser = new Parser(this, fileName);
-        this.sigma16InstructionParser.parse();
+
+        Parser sigma16InstructionParser = new Parser(this, fileName);
+        sigma16InstructionParser.parse();
         this.programMemory = sigma16InstructionParser.getProgMem();
         this.dataMemory = sigma16InstructionParser.getDataMem();
         this.programCounter = 0;

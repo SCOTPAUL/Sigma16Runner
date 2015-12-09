@@ -34,7 +34,16 @@ public class Memory<E> {
     
     @Override
     public String toString(){
-        return memory.toString();
+        StringBuilder sb = new StringBuilder("[");
+        for(E entry : memory){
+            if(entry != null){
+                sb.append(entry).append(", ");
+            }
+        }
+        sb.setLength(sb.length() - 2);
+
+        sb.append("]");
+        return sb.toString();
     }
 
 }
