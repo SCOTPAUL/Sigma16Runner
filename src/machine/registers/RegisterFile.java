@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public class RegisterFile {
     
-    public static final int MAX_REG_NUM = 15;
+    public static final byte MAX_REG_NUM = 15;
     private ArrayList<Register> regFile;
     
     public RegisterFile(Machine m){

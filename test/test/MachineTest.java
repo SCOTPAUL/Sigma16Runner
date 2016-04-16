@@ -100,7 +100,7 @@ public class MachineTest {
     @Test
     public void testMachineStatusFlag() {
         main.Sigma16RunnerMain.main(new String[]{"-s", currentDir + "/test/bar-chart.asm.txt"});
-        assertTrue(outContent.toString().contains("Terminated: true"));
+        assertTrue(outContent.toString().contains("term: true"));
     }
 
 }

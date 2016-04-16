@@ -12,7 +12,6 @@ import parser.Parser;
 
 /**
  * @author Paul Cowie
- *
  */
 public class Machine {
     private Register[] registers;
@@ -130,7 +129,10 @@ public class Machine {
     
     @Override
     public String toString(){
-        return "PC: " + programCounter + " Registers: " + Arrays.toString(registers) + " Terminated: " + terminate + dataMemory.toString();
+        return "pc: " + programCounter + 
+               "\nregs: " + Arrays.toString(registers) + 
+               "\nterm: " + terminate + 
+               "\nmem: " + dataMemory.toString();
     }
 
 }

@@ -7,10 +7,6 @@ import machine.Machine;
 
 public class Sigma16RunnerMain {
 
-
-    /**
-     * @param args
-     */
     public static void main(String[] args) {
         boolean printStatus = false;
         String file = null;

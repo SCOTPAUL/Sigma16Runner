@@ -8,8 +8,8 @@ public class Register {
     private short value;
     private Machine m;
     
-    public Register(Machine m, byte regNum) throws RegisterNumberInvalidException{
-        if (regNum < 0 || regNum > RegisterFile.MAX_REG_NUM ){
+    public Register(Machine m, byte regNum) throws RegisterNumberInvalidException {
+        if (regNum < 0 || regNum > RegisterFile.MAX_REG_NUM){
             throw new RegisterNumberInvalidException();
         }
         else {
@@ -19,7 +19,7 @@ public class Register {
         }
     }
     
-    public void setValue(short value) throws CannotAlterR0Exception{
+    public void setValue(short value) throws CannotAlterR0Exception {
         if(this.regNum == 0 && value != 0){
             throw new CannotAlterR0Exception();
         }
